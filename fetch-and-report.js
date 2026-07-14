@@ -20,10 +20,8 @@ const BASE_DIR = __dirname;
 // SYMBOLS — Yahoo Finance tickers
 // ═══════════════════════════════════
 const SYMBOLS = {
-  GOLD:   { yahoo: 'GC=F',      name: 'Gold',       unit: 'USD/oz', digits: 2 },
-  SILVER: { yahoo: 'SI=F',      name: 'Silver',     unit: 'USD/oz', digits: 2 },
-  PLAT:   { yahoo: 'PL=F',      name: 'Platinum',   unit: 'USD/oz', digits: 2 },
-  PALL:   { yahoo: 'PA=F',      name: 'Palladium',  unit: 'USD/oz', digits: 2 },
+  GOLD:   { yahoo: 'XAUUSD=X',  name: 'Gold Spot',  unit: 'USD/oz', digits: 2 },
+  SILVER: { yahoo: 'XAGUSD=X',  name: 'Silver Spot',unit: 'USD/oz', digits: 2 },
   WTI:    { yahoo: 'CL=F',      name: 'WTI Crude',  unit: 'USD/bbl',digits: 2 },
   BRENT:  { yahoo: 'BZ=F',      name: 'Brent Crude',unit: 'USD/bbl',digits: 2 },
   COPPER: { yahoo: 'HG=F',      name: 'Copper',     unit: 'USD/lb', digits: 2 },
