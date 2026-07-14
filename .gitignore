@@ -1,0 +1,14 @@
+apikeys.js
+ai-hedge-fund/
+superpowers/
+skills/
+.agents/
+.claude/
+.clawhub/
+docs/
+__pycache__/
+*.pyc
+.DS_Store
+*.txt
+manifest.json
+skills-lock.json

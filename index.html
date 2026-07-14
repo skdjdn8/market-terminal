@@ -1,0 +1,2339 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MARKET TERMINAL — 金融市场观察站</title>
+
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: {
+        'gloock': ['Gloock', 'serif'],
+        'bebas': ['Bebas Neue', 'sans-serif'],
+        'manrope': ['Manrope', 'sans-serif'],
+        'mono': ['JetBrains Mono', 'monospace'],
+      },
+      colors: {
+        'terminal': { bg:'#070707', fg:'#eaeaea', gold:'#e8c382', green:'#4af626', red:'#e61919', muted:'#888888' }
+      }
+    }
+  }
+}
+</script>
+
+<!-- Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Gloock&family=JetBrains+Mono:wght@300;400;600&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- GSAP + ScrollTrigger -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+<!-- Three.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<!-- Lenis Smooth Scroll -->
+<script src="https://cdn.jsdelivr.net/npm/@studio-freight/lenis@1.0.29/dist/lenis.min.js"></script>
+
+<!-- Iconify -->
+<script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js"></script>
+
+<!-- API Keys (local file, never committed) -->
+<script src="apikeys.js"></script>
+
+<style>
+/* ========== GLOBAL STYLES ========== */
+* { box-sizing: border-box; }
+html { scroll-behavior: auto; }
+body {
+  background-color: #070707;
+  color: #eaeaea;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: 'Manrope', sans-serif;
+  overflow-x: hidden;
+}
+::selection { background: #e8c382; color: #351e10; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 0.5rem; }
+::-webkit-scrollbar-track { background: #070707; }
+::-webkit-scrollbar-thumb { background: #333; border-radius: 0; }
+::-webkit-scrollbar-thumb:hover { background: #e8c382; }
+
+/* ========== NOISE OVERLAY ========== */
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg width='400' height='400' viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+}
+
+/* ========== GRID BACKGROUNDS ========== */
+.grid-bg-body {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+  background-size: 3rem 3rem;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 0%, black 40%, transparent 100%);
+}
+.grid-bg-fine {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+  background-size: 5rem 5rem;
+  mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, black 30%, transparent 100%);
+}
+
+/* Section-specific grids */
+.section-grid-4 {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 4rem 4rem;
+}
+.section-grid-2 {
+  background-image:
+    linear-gradient(rgba(232,195,130,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(232,195,130,0.03) 1px, transparent 1px);
+  background-size: 2rem 2rem;
+}
+
+/* ========== FRAME SECTION (Glass Console) ========== */
+.frame-section {
+  position: relative;
+  background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 50%, rgba(255,255,255,0.02) 100%);
+  border: 1px solid rgba(255,255,255,0.05);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.04),
+    inset 0 -1px 0 rgba(0,0,0,0.3),
+    0 4px 24px rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+}
+.frame-section::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 10px; height: 10px;
+  border-top: 1px solid rgba(232,195,130,0.4);
+  border-left: 1px solid rgba(232,195,130,0.4);
+  pointer-events: none;
+}
+.frame-section::after {
+  content: '';
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 10px; height: 10px;
+  border-bottom: 1px solid rgba(232,195,130,0.4);
+  border-right: 1px solid rgba(232,195,130,0.4);
+  pointer-events: none;
+}
+
+/* ========== UI PILLS ========== */
+.ui-pill {
+  background: rgba(7,7,7,0.85);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 2px 8px rgba(0,0,0,0.5);
+  backdrop-filter: blur(12px);
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* ========== CARD HOVER EFFECTS ========== */
+.data-card {
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.data-card:hover {
+  border-color: rgba(232,195,130,0.3);
+  box-shadow: inset 0 1px 0 rgba(232,195,130,0.1), 0 8px 32px rgba(0,0,0,0.6);
+}
+.data-card .card-glow {
+  position: absolute;
+  top: 0; left: 10%; right: 10%; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(232,195,130,0.6), transparent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.data-card:hover .card-glow { opacity: 1; }
+
+/* ========== WORD REVEAL ========== */
+.reveal-word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+}
+.reveal-word span {
+  display: inline-block;
+  will-change: transform, filter;
+  backface-visibility: hidden;
+}
+
+/* ========== PRICE TICKER ========== */
+@keyframes ticker-flash-up {
+  0%,100% { color: #4af626; }
+  50% { color: #fff; }
+}
+@keyframes ticker-flash-down {
+  0%,100% { color: #e61919; }
+  50% { color: #fff; }
+}
+.price-up { animation: ticker-flash-up 0.6s ease; }
+.price-down { animation: ticker-flash-down 0.6s ease; }
+
+/* ========== SVG CONNECTOR ANIM ========== */
+.connector-path {
+  stroke-dasharray: 6 8;
+  animation: dash-march 2s linear infinite;
+}
+@keyframes dash-march {
+  to { stroke-dashoffset: -28; }
+}
+
+/* ========== SCANLINE ========== */
+.scanline-subtle {
+  position: relative;
+}
+.scanline-subtle::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.015) 3px, rgba(0,0,0,0.015) 6px);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ========== THREE.JS CANVAS ========== */
+.wireframe-canvas { display: block; width: 100%; height: 100%; }
+
+/* ========== GRAYSCALE TO COLOR ========== */
+.img-gray-transition {
+  filter: grayscale(100%) brightness(0.7);
+  transition: filter 0.5s ease, transform 0.5s ease;
+}
+.img-gray-transition:hover {
+  filter: grayscale(0%) brightness(1);
+  transform: scale(1.03);
+}
+
+/* Gradient text */
+.text-gradient-gold {
+  background: linear-gradient(135deg, #e8c382 0%, #c8943e 50%, #f0d89c 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Header logo */
+.header-logo {
+  background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+  box-shadow:
+    0 2px 0 rgba(255,255,255,0.06),
+    0 -1px 0 rgba(0,0,0,0.8),
+    inset 0 1px 0 rgba(255,255,255,0.05),
+    0 4px 12px rgba(0,0,0,0.5);
+}
+</style>
+</head>
+<body>
+
+<!-- ========== NOISE OVERLAY ========== -->
+<div class="noise-overlay"></div>
+
+<!-- ========== GRID BACKGROUNDS ========== -->
+<div class="grid-bg-body"></div>
+<div class="grid-bg-fine"></div>
+
+<!-- ========== HEADER ========== -->
+<header class="fixed top-0 left-0 right-0 z-20 backdrop-blur-xl" style="background: rgba(7,7,7,0.85); border-bottom: 1px solid rgba(255,255,255,0.06);">
+  <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+    <!-- Logo -->
+    <div class="flex items-center gap-3">
+      <div class="header-logo w-10 h-10 flex items-center justify-center rounded-sm select-none" style="border: 1px solid rgba(255,255,255,0.08);">
+        <span class="font-gloock text-lg text-gradient-gold leading-none">VL</span>
+      </div>
+      <div class="hidden sm:block">
+        <div class="font-mono text-xs tracking-widest text-gray-400">MARKET</div>
+        <div class="font-bebas text-sm tracking-wider text-[#e8c382] -mt-0.5">TERMINAL</div>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <nav class="hidden md:flex items-center gap-8">
+      <a href="#hero" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382] transition-colors duration-300">// 概览</a>
+      <a href="#sentiment" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382] transition-colors duration-300">// 情绪</a>
+      <a href="#commodities" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382] transition-colors duration-300">// 大宗</a>
+      <a href="#metals" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382] transition-colors duration-300">// 贵金属</a>
+      <a href="#indices" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382] transition-colors duration-300">// 指数</a>
+      <a href="#research" class="font-mono text-xs tracking-widest text-[#e8c382] hover:text-white transition-colors duration-300">// 研报</a>
+    </nav>
+
+    <!-- Status -->
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2">
+        <span id="header-status-dot" class="w-2 h-2 rounded-full bg-[#e8c382]"></span>
+        <span id="header-status-label" class="font-mono text-xs tracking-wider text-[#e8c382]">SIM</span>
+      </div>
+      <span class="font-mono text-xs text-gray-600" id="header-time">--</span>
+    </div>
+  </div>
+</header>
+
+<!-- ========== MAIN CONTENT ========== -->
+<main class="relative z-10">
+
+<!-- ================================================================ -->
+<!-- SECTION 0: GLOBAL TICKER STRIP -->
+<!-- ================================================================ -->
+<section class="mt-16 border-b border-white/5">
+  <div class="max-w-7xl mx-auto px-6 py-2 overflow-hidden">
+    <div class="flex gap-8 animate-[scroll_30s_linear_infinite]" id="ticker-strip" style="white-space: nowrap;">
+    </div>
+  </div>
+</section>
+
+<style>
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+</style>
+
+<!-- ================================================================ -->
+<!-- SECTION 1: HERO — MARKET OVERVIEW -->
+<!-- ================================================================ -->
+<section id="hero" class="relative min-h-screen flex items-center pt-20 pb-16">
+  <div class="max-w-7xl mx-auto px-6 w-full">
+    <div class="grid grid-cols-1 lg:grid-cols-[0.72fr_1.28fr] gap-12 items-center">
+
+      <!-- LEFT COLUMN -->
+      <div class="space-y-8">
+        <!-- Badge -->
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-sm border border-indigo-500/20 bg-indigo-500/5">
+          <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
+          <span class="font-mono text-[0.65rem] tracking-[0.15em] text-indigo-300/80">SYS::MARKET_INTEL_v2.4</span>
+        </div>
+
+        <!-- Heading -->
+        <div>
+          <h1 class="font-gloock text-5xl md:text-7xl lg:text-8xl leading-[0.9] text-white" id="hero-heading">
+            <div class="reveal-word"><span>GLOBAL</span></div><br>
+            <div class="reveal-word"><span>MARKET</span></div><br>
+            <div class="reveal-word"><span class="text-gradient-gold">SURVEILLANCE</span></div>
+          </h1>
+        </div>
+
+        <!-- Subtitle -->
+        <p class="font-manrope text-sm text-gray-500 max-w-md leading-relaxed">
+          实时监测全球金融市场动态。覆盖大宗商品、贵金属及主要股指，通过算法引擎提供多维度数据可视化，辅助决策判断。
+        </p>
+
+        <!-- Dual KPI Grid -->
+        <div class="grid grid-cols-2 gap-4">
+          <div class="frame-section p-4 rounded-sm">
+            <div class="font-mono text-[0.6rem] tracking-[0.15em] text-gray-500 mb-1">EUR/USD 欧元</div>
+            <div class="font-bebas text-4xl tracking-tight text-white" id="kpi-eurusd">--</div>
+            <div class="font-mono text-xs mt-1" id="kpi-eurusd-change">--</div>
+          </div>
+          <div class="frame-section p-4 rounded-sm">
+            <div class="font-mono text-[0.6rem] tracking-[0.15em] text-gray-500 mb-1">DXY 美元指数</div>
+            <div class="font-bebas text-4xl tracking-tight text-white" id="kpi-dxy">--</div>
+            <div class="font-mono text-xs mt-1" id="kpi-dxy-change">--</div>
+          </div>
+          <div class="frame-section p-4 rounded-sm">
+            <div class="font-mono text-[0.6rem] tracking-[0.15em] text-gray-500 mb-1">US10Y 美债收益率</div>
+            <div class="font-bebas text-4xl tracking-tight text-white" id="kpi-us10y">--</div>
+            <div class="font-mono text-xs mt-1" id="kpi-us10y-change">--</div>
+          </div>
+          <div class="frame-section p-4 rounded-sm">
+            <div class="font-mono text-[0.6rem] tracking-[0.15em] text-gray-500 mb-1">BTC 比特币</div>
+            <div class="font-bebas text-4xl tracking-tight text-white" id="kpi-btc">--</div>
+            <div class="font-mono text-xs mt-1" id="kpi-btc-change">--</div>
+          </div>
+        </div>
+
+        <!-- Operator Avatar Stack (symbolic: market participants) -->
+        <div class="flex items-center gap-4">
+          <div class="flex -space-x-3">
+            <div class="w-10 h-10 rounded-full border-2 border-[#070707] bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center font-mono text-[0.55rem] text-white font-bold">NY</div>
+            <div class="w-10 h-10 rounded-full border-2 border-[#070707] bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-mono text-[0.55rem] text-white font-bold">LN</div>
+            <div class="w-10 h-10 rounded-full border-2 border-[#070707] bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center font-mono text-[0.55rem] text-white font-bold">HK</div>
+            <div class="w-10 h-10 rounded-full border-2 border-[#070707] bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center font-mono text-[0.55rem] text-white font-bold">TK</div>
+          </div>
+          <span class="font-mono text-[0.6rem] tracking-wider text-gray-600">4 大市场 · 数据同步中</span>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: Three.js Wireframe Globe -->
+      <div class="relative h-[500px] lg:h-[650px] frame-section rounded-sm overflow-hidden scanline-subtle">
+        <canvas id="heroCanvas" class="wireframe-canvas"></canvas>
+
+        <!-- UI Pills on Globe -->
+        <div class="absolute top-4 left-4 z-20 ui-pill px-3 py-1.5 rounded-sm flex items-center gap-2">
+          <iconify-icon icon="solar:globe-linear" class="text-[#e8c382] text-sm"></iconify-icon>
+          <span class="text-gray-400">SYNC MESH</span>
+          <span class="text-[#4af626]">●</span>
+        </div>
+        <div class="absolute bottom-4 right-4 z-20 ui-pill px-3 py-1.5 rounded-sm flex items-center gap-2">
+          <iconify-icon icon="solar:routing-3-linear" class="text-[#e8c382] text-sm"></iconify-icon>
+          <span class="text-gray-400">ROUTE MEMORY</span>
+          <span class="font-mono text-[#e8c382] text-xs">4.2ms</span>
+        </div>
+        <div class="absolute top-4 right-4 z-20 ui-pill px-3 py-1.5 rounded-sm flex items-center gap-2">
+          <iconify-icon icon="solar:layers-linear" class="text-[#e8c382] text-sm"></iconify-icon>
+          <span class="text-gray-400">CANVAS LOAD</span>
+          <span class="font-mono text-[#4af626] text-xs">128</span>
+        </div>
+
+        <!-- SVG Connectors -->
+        <svg class="absolute inset-0 z-10 pointer-events-none" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice">
+          <path d="M188 158 H316 V254" class="connector-path" stroke="rgba(232,195,130,0.25)" stroke-width="1" fill="none"/>
+          <path d="M816 172 H686 V278" class="connector-path" stroke="rgba(232,195,130,0.25)" stroke-width="1" fill="none"/>
+          <path d="M196 526 H356 V426" class="connector-path" stroke="rgba(232,195,130,0.25)" stroke-width="1" fill="none"/>
+          <path d="M790 552 H636 V446" class="connector-path" stroke="rgba(232,195,130,0.25)" stroke-width="1" fill="none"/>
+          <!-- Nodes -->
+          <circle cx="188" cy="158" r="3" fill="#e8c382" opacity="0.6"/><circle cx="316" cy="254" r="3" fill="#e8c382" opacity="0.6"/>
+          <circle cx="816" cy="172" r="3" fill="#e8c382" opacity="0.6"/><circle cx="686" cy="278" r="3" fill="#e8c382" opacity="0.6"/>
+          <circle cx="196" cy="526" r="3" fill="#e8c382" opacity="0.6"/><circle cx="356" cy="426" r="3" fill="#e8c382" opacity="0.6"/>
+          <circle cx="790" cy="552" r="3" fill="#e8c382" opacity="0.6"/><circle cx="636" cy="446" r="3" fill="#e8c382" opacity="0.6"/>
+        </svg>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SECTION 1.5: MARKET SENTIMENT PANEL -->
+<!-- ================================================================ -->
+<section id="sentiment" class="relative py-20 border-b border-white/[0.03]">
+  <div class="max-w-7xl mx-auto px-6">
+    <!-- Section header -->
+    <div class="mb-10 frame-section-entry">
+      <div class="font-mono text-[0.65rem] tracking-[0.2em] text-[#e8c382] mb-3">// SENTIMENT_INTEL</div>
+      <h2 class="font-gloock text-4xl md:text-6xl leading-[0.95] text-white">
+        <span class="reveal-word"><span>市场情绪</span></span>
+        <span class="reveal-word"><span class="text-gradient-gold"> SENTIMENT</span></span>
+      </h2>
+      <p class="font-manrope text-sm text-gray-500 mt-3 max-w-lg">多维恐惧贪婪指标 — 辅助判断市场风险偏好与潜在转折</p>
+    </div>
+
+    <!-- 3-Card Sentiment Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+
+      <!-- Card 1: Crypto Fear & Greed -->
+      <div class="data-card frame-section rounded-sm p-5 relative overflow-hidden frame-section-entry">
+        <div class="card-glow"></div>
+        <div class="flex items-center gap-2 mb-3">
+          <iconify-icon icon="solar:emoji-funny-square-linear" class="text-[#e8c382] text-lg"></iconify-icon>
+          <span class="font-mono text-[0.55rem] tracking-[0.15em] text-gray-500">CRYPTO FEAR & GREED</span>
+        </div>
+        <div class="font-bebas text-5xl tracking-tight text-white mb-1" id="sent-fng-value">--</div>
+        <div class="font-mono text-xs font-semibold mb-3" id="sent-fng-label">--</div>
+        <!-- Gauge bar -->
+        <div class="h-1.5 rounded-full bg-gray-800 relative overflow-hidden">
+          <div class="absolute inset-y-0 left-0 rounded-full transition-all duration-700" id="sent-fng-bar"
+               style="width: 50%; background: linear-gradient(90deg, #e61919, #f97316, #e8c382, #4ade80, #4af626); background-size: 200% 100%; background-position: 50% center;"></div>
+        </div>
+        <div class="flex justify-between mt-1.5 text-[0.5rem] font-mono tracking-wider text-gray-600">
+          <span>恐惧</span><span>中性</span><span>贪婪</span>
+        </div>
+        <div class="font-mono text-[0.55rem] text-gray-600 mt-2" id="sent-fng-src">alt:me</div>
+      </div>
+
+      <!-- Card 2: Gold/Silver Ratio -->
+      <div class="data-card frame-section rounded-sm p-5 relative overflow-hidden frame-section-entry">
+        <div class="card-glow"></div>
+        <div class="flex items-center gap-2 mb-3">
+          <iconify-icon icon="solar:scales-linear" class="text-[#e8c382] text-lg"></iconify-icon>
+          <span class="font-mono text-[0.55rem] tracking-[0.15em] text-gray-500">GOLD/SILVER RATIO</span>
+        </div>
+        <div class="font-bebas text-5xl tracking-tight text-white mb-1" id="sent-ausr-value">--</div>
+        <div class="font-mono text-xs font-semibold mb-3" id="sent-ausr-label">--</div>
+        <div class="h-1.5 rounded-full bg-gray-800 relative overflow-hidden">
+          <div class="absolute inset-y-0 left-0 rounded-full transition-all duration-700" id="sent-ausr-bar"
+               style="width: 50%; background: linear-gradient(90deg, #4af626, #e8c382, #f97316, #e61919); background-size: 100% 100%;"></div>
+        </div>
+        <div class="flex justify-between mt-1.5 text-[0.5rem] font-mono tracking-wider text-gray-600">
+          <span>风险偏好</span><span>中性</span><span>避险</span>
+        </div>
+        <div class="font-mono text-[0.55rem] text-gray-600 mt-2" id="sent-ausr-src">XAU÷XAG</div>
+      </div>
+
+      <!-- Card 3: US Yield Curve 10Y-3M Spread -->
+      <div class="data-card frame-section rounded-sm p-5 relative overflow-hidden frame-section-entry">
+        <div class="card-glow"></div>
+        <div class="flex items-center gap-2 mb-3">
+          <iconify-icon icon="solar:graph-up-linear" class="text-[#e8c382] text-lg"></iconify-icon>
+          <span class="font-mono text-[0.55rem] tracking-[0.15em] text-gray-500">YIELD CURVE 10Y-3M</span>
+        </div>
+        <div class="font-bebas text-5xl tracking-tight text-white mb-1" id="sent-yc-value">--</div>
+        <div class="font-mono text-xs font-semibold mb-3" id="sent-yc-label">--</div>
+        <div class="h-1.5 rounded-full bg-gray-800 relative overflow-hidden">
+          <div class="absolute inset-y-0 left-0 rounded-full transition-all duration-700" id="sent-yc-bar"
+               style="width: 50%; background: linear-gradient(90deg, #e61919, #f97316, #e8c382, #4ade80); background-size: 100% 100%;"></div>
+        </div>
+        <div class="flex justify-between mt-1.5 text-[0.5rem] font-mono tracking-wider text-gray-600">
+          <span>倒挂</span><span>平坦</span><span>正常</span>
+        </div>
+        <div class="font-mono text-[0.55rem] text-gray-600 mt-2" id="sent-yc-src">^TNX - ^IRX</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SECTION 2: COMMODITIES — DATA CRYSTALS -->
+<!-- ================================================================ -->
+<section id="commodities" class="relative py-24 section-grid-4">
+  <div class="max-w-7xl mx-auto px-6">
+    <!-- Section header -->
+    <div class="mb-16 frame-section-entry">
+      <div class="font-mono text-[0.65rem] tracking-[0.2em] text-[#e8c382] mb-4">// SECTION_02</div>
+      <h2 class="font-gloock text-5xl md:text-7xl leading-[0.95] text-white" id="commodities-heading">
+        <div class="reveal-word"><span>大宗商品</span></div><br>
+        <div class="reveal-word"><span class="text-gradient-gold">COMMODITIES</span></div>
+      </h2>
+      <p class="font-manrope text-sm text-gray-500 mt-4 max-w-xl">全球关键能源价格追踪 — WTI 原油现货实时数据与波动率监控</p>
+    </div>
+
+    <!-- Featured Commodity Card -->
+    <div class="max-w-2xl">
+      <div class="data-card frame-section rounded-sm p-6 relative overflow-hidden scanline-subtle">
+        <div class="card-glow"></div>
+        <div class="flex gap-6">
+          <div class="w-40 h-40 flex-shrink-0" id="crystal-oil">
+            <canvas id="crystalCanvas1" width="160" height="160"></canvas>
+          </div>
+          <div class="flex-1">
+            <div class="font-mono text-[0.6rem] tracking-[0.15em] text-gray-500 mb-1">ENERGY · 能源</div>
+            <div class="font-gloock text-3xl text-white mb-1">WTI 原油</div>
+            <div class="font-bebas text-5xl tracking-tight text-white" id="price-oil">--</div>
+            <div class="font-mono text-sm mt-1" id="change-oil">--</div>
+            <div class="mt-3 flex gap-4 text-[0.6rem] font-mono tracking-wider text-gray-500">
+              <span>高: <span class="text-white" id="high-oil">--</span></span>
+              <span>低: <span class="text-white" id="low-oil">--</span></span>
+              <span>量: <span class="text-white" id="vol-oil">--</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SECTION 3: PRECIOUS METALS — LIVE TICKERS -->
+<!-- ================================================================ -->
+<section id="metals" class="relative py-24 section-grid-2">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-12">
+
+      <!-- LEFT: Section Header + KPI -->
+      <div class="frame-section-entry">
+        <div class="font-mono text-[0.65rem] tracking-[0.2em] text-[#e8c382] mb-4">// SECTION_03</div>
+        <h2 class="font-gloock text-5xl md:text-7xl leading-[0.95] text-white" id="metals-heading">
+          <div class="reveal-word"><span>贵金属</span></div><br>
+          <div class="reveal-word"><span class="text-gradient-gold">PRECIOUS</span></div><br>
+          <div class="reveal-word"><span>METALS</span></div>
+        </h2>
+        <p class="font-manrope text-sm text-gray-500 mt-6 max-w-sm leading-relaxed">
+          黄金、白银、铂金、钯金 — 实时报价与价差分析。算法驱动的波动率监测与趋势信号。
+        </p>
+
+        <!-- Aggregate KPI -->
+        <div class="frame-section p-5 rounded-sm mt-8">
+          <div class="font-mono text-[0.6rem] tracking-[0.15em] text-gray-500 mb-2">贵金属综合指标</div>
+          <div class="font-bebas text-6xl tracking-tight text-gradient-gold" id="metal-composite">--</div>
+          <div class="font-mono text-xs text-gray-500 mt-2">GOLD · SILVER · PLATINUM · PALLADIUM</div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Metal Tickers + Sparklines -->
+      <div class="space-y-4">
+        <!-- Gold -->
+        <div class="frame-section rounded-sm p-5 scanline-subtle frame-section-entry">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <div class="w-3 h-3 rounded-full bg-[#e8c382] shadow-[0_0_8px_rgba(232,195,130,0.5)]"></div>
+              <div>
+                <div class="font-gloock text-xl text-white">XAU/USD</div>
+                <div class="font-mono text-[0.6rem] tracking-wider text-gray-500">黄金 / 现货</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="font-bebas text-3xl tracking-tight text-white" id="metal-price-gold">--</div>
+              <div class="font-mono text-xs" id="metal-change-gold">--</div>
+            </div>
+          </div>
+          <svg class="w-full h-16" id="sparkline-gold" viewBox="0 0 400 64" preserveAspectRatio="none"></svg>
+          <div class="flex justify-between mt-2 text-[0.55rem] font-mono tracking-wider text-gray-600">
+            <span>BID <span class="text-white" id="bid-gold">--</span></span>
+            <span>ASK <span class="text-white" id="ask-gold">--</span></span>
+            <span>SPREAD <span class="text-white" id="spread-gold">--</span></span>
+          </div>
+        </div>
+
+        <!-- Silver -->
+        <div class="frame-section rounded-sm p-5 scanline-subtle frame-section-entry">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <div class="w-3 h-3 rounded-full bg-gray-300 shadow-[0_0_8px_rgba(200,200,200,0.5)]"></div>
+              <div>
+                <div class="font-gloock text-xl text-white">XAG/USD</div>
+                <div class="font-mono text-[0.6rem] tracking-wider text-gray-500">白银 / 现货</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="font-bebas text-3xl tracking-tight text-white" id="metal-price-silver">--</div>
+              <div class="font-mono text-xs" id="metal-change-silver">--</div>
+            </div>
+          </div>
+          <svg class="w-full h-16" id="sparkline-silver" viewBox="0 0 400 64" preserveAspectRatio="none"></svg>
+          <div class="flex justify-between mt-2 text-[0.55rem] font-mono tracking-wider text-gray-600">
+            <span>BID <span class="text-white" id="bid-silver">--</span></span>
+            <span>ASK <span class="text-white" id="ask-silver">--</span></span>
+            <span>SPREAD <span class="text-white" id="spread-silver">--</span></span>
+          </div>
+        </div>
+
+        <!-- Platinum -->
+        <div class="frame-section rounded-sm p-5 scanline-subtle frame-section-entry">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <div class="w-3 h-3 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.5)]"></div>
+              <div>
+                <div class="font-gloock text-xl text-white">XPT/USD</div>
+                <div class="font-mono text-[0.6rem] tracking-wider text-gray-500">铂金 / 现货</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="font-bebas text-3xl tracking-tight text-white" id="metal-price-platinum">--</div>
+              <div class="font-mono text-xs" id="metal-change-platinum">--</div>
+            </div>
+          </div>
+          <svg class="w-full h-16" id="sparkline-platinum" viewBox="0 0 400 64" preserveAspectRatio="none"></svg>
+          <div class="flex justify-between mt-2 text-[0.55rem] font-mono tracking-wider text-gray-600">
+            <span>BID <span class="text-white" id="bid-platinum">--</span></span>
+            <span>ASK <span class="text-white" id="ask-platinum">--</span></span>
+            <span>SPREAD <span class="text-white" id="spread-platinum">--</span></span>
+          </div>
+        </div>
+
+        <!-- Palladium -->
+        <div class="frame-section rounded-sm p-5 scanline-subtle frame-section-entry">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-3">
+              <div class="w-3 h-3 rounded-full bg-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.5)]"></div>
+              <div>
+                <div class="font-gloock text-xl text-white">XPD/USD</div>
+                <div class="font-mono text-[0.6rem] tracking-wider text-gray-500">钯金 / 现货</div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="font-bebas text-3xl tracking-tight text-white" id="metal-price-palladium">--</div>
+              <div class="font-mono text-xs" id="metal-change-palladium">--</div>
+            </div>
+          </div>
+          <svg class="w-full h-16" id="sparkline-palladium" viewBox="0 0 400 64" preserveAspectRatio="none"></svg>
+          <div class="flex justify-between mt-2 text-[0.55rem] font-mono tracking-wider text-gray-600">
+            <span>BID <span class="text-white" id="bid-palladium">--</span></span>
+            <span>ASK <span class="text-white" id="ask-palladium">--</span></span>
+            <span>SPREAD <span class="text-white" id="spread-palladium">--</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SECTION 4: GLOBAL INDICES — TRADINGVIEW REAL-TIME -->
+<!-- ================================================================ -->
+<section id="indices" class="relative py-24">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="mb-10 frame-section-entry">
+      <div class="font-mono text-[0.65rem] tracking-[0.2em] text-[#e8c382] mb-4">// SECTION_04 · TRADINGVIEW</div>
+      <h2 class="font-gloock text-5xl md:text-7xl leading-[0.95] text-white" id="indices-heading">
+        <div class="reveal-word"><span>全球指数</span></div><br>
+        <div class="reveal-word"><span class="text-gradient-gold">GLOBAL</span></div>
+        <div class="reveal-word"><span> INDICES</span></div>
+      </h2>
+      <p class="font-manrope text-sm text-gray-500 mt-3 max-w-lg">TradingView 实时数据 — 全球主要股指报价与日内走势</p>
+    </div>
+
+    <!-- TradingView Market Overview Widget — all indices in one real-time grid -->
+    <div class="frame-section rounded-sm overflow-hidden scanline-subtle p-4 mb-8">
+      <div class="tradingview-widget-container" style="height:520px">
+        <div class="tradingview-widget-container__widget"></div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
+        {
+          "colorTheme": "dark",
+          "dateRange": "1D",
+          "showChart": true,
+          "locale": "zh_CN",
+          "largeChartUrl": "",
+          "isTransparent": true,
+          "showSymbolLogo": false,
+          "showFloatingTooltip": true,
+          "width": "100%",
+          "height": "100%",
+          "plotLineColorGrowing": "rgba(74, 246, 38, 0.7)",
+          "plotLineColorFalling": "rgba(230, 25, 25, 0.7)",
+          "gridLineColor": "rgba(255, 255, 255, 0.05)",
+          "scaleFontColor": "rgba(255, 255, 255, 0.5)",
+          "belowLineFillColorGrowing": "rgba(74, 246, 38, 0.05)",
+          "belowLineFillColorFalling": "rgba(230, 25, 25, 0.05)",
+          "tabs": [
+            {
+              "title": "全球指数",
+              "symbols": [
+                {"s": "SP:SPX", "d": "S&P 500"},
+                {"s": "NASDAQ:NDX", "d": "NASDAQ 100"},
+                {"s": "TVC:VIX", "d": "VIX 恐慌指数"},
+                {"s": "HSI:HSI", "d": "恒生指数"},
+                {"s": "TSE:NI225", "d": "日经225"},
+                {"s": "SSE:000300", "d": "沪深300"}
+              ]
+            },
+            {
+              "title": "外汇",
+              "symbols": [
+                {"s": "FX:EURUSD", "d": "EUR/USD"},
+                {"s": "FX:USDJPY", "d": "USD/JPY"},
+                {"s": "FX:GBPUSD", "d": "GBP/USD"},
+                {"s": "FX:USDCNH", "d": "USD/CNH"},
+                {"s": "TVC:DXY", "d": "美元指数 DXY"},
+                {"s": "FX:AUDUSD", "d": "AUD/USD"}
+              ]
+            }
+          ]
+        }
+        </script>
+      </div>
+    </div>
+
+    <!-- Mini overview cards row — individual real-time tickers -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div class="frame-section rounded-sm p-3 overflow-hidden" style="height:140px"><div class="tradingview-widget-container" style="height:100%"><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>{"symbol":"SP:SPX","width":"100%","height":"100%","locale":"zh_CN","dateRange":"1D","colorTheme":"dark","isTransparent":true,"autosize":true,"largeChartUrl":""}</script></div></div>
+      <div class="frame-section rounded-sm p-3 overflow-hidden" style="height:140px"><div class="tradingview-widget-container" style="height:100%"><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>{"symbol":"NASDAQ:NDX","width":"100%","height":"100%","locale":"zh_CN","dateRange":"1D","colorTheme":"dark","isTransparent":true,"autosize":true,"largeChartUrl":""}</script></div></div>
+      <div class="frame-section rounded-sm p-3 overflow-hidden" style="height:140px"><div class="tradingview-widget-container" style="height:100%"><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>{"symbol":"TVC:VIX","width":"100%","height":"100%","locale":"zh_CN","dateRange":"1D","colorTheme":"dark","isTransparent":true,"autosize":true,"largeChartUrl":""}</script></div></div>
+      <div class="frame-section rounded-sm p-3 overflow-hidden" style="height:140px"><div class="tradingview-widget-container" style="height:100%"><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>{"symbol":"HSI:HSI","width":"100%","height":"100%","locale":"zh_CN","dateRange":"1D","colorTheme":"dark","isTransparent":true,"autosize":true,"largeChartUrl":""}</script></div></div>
+      <div class="frame-section rounded-sm p-3 overflow-hidden" style="height:140px"><div class="tradingview-widget-container" style="height:100%"><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>{"symbol":"TSE:NI225","width":"100%","height":"100%","locale":"zh_CN","dateRange":"1D","colorTheme":"dark","isTransparent":true,"autosize":true,"largeChartUrl":""}</script></div></div>
+      <div class="frame-section rounded-sm p-3 overflow-hidden" style="height:140px"><div class="tradingview-widget-container" style="height:100%"><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>{"symbol":"SSE:000300","width":"100%","height":"100%","locale":"zh_CN","dateRange":"1D","colorTheme":"dark","isTransparent":true,"autosize":true,"largeChartUrl":""}</script></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ -->
+<!-- SECTION 5: AI RESEARCH DESK -->
+<!-- ================================================================ -->
+<section id="research" class="relative py-20 border-t border-white/[0.03]">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="mb-10 frame-section-entry">
+      <div class="font-mono text-[0.65rem] tracking-[0.2em] text-[#e8c382] mb-3">// AI_RESEARCH_DESK</div>
+      <h2 class="font-gloock text-4xl md:text-6xl leading-[0.95] text-white">
+        <span class="reveal-word"><span>智能研报</span></span>
+        <span class="reveal-word"><span class="text-gradient-gold"> RESEARCH</span></span>
+      </h2>
+      <p class="font-manrope text-sm text-gray-500 mt-3 max-w-lg">DeepSeek 驱动的多维度市场分析 — 基于实时数据 + 跨资产联动研判</p>
+    </div>
+
+    <!-- Controls -->
+    <div class="flex flex-wrap items-center gap-4 mb-8 frame-section-entry">
+      <button id="btn-generate-report"
+        class="px-6 py-3 rounded-sm font-mono text-xs tracking-widest transition-all duration-300
+               bg-[#e8c382] text-[#070707] hover:bg-[#f0d89c] font-semibold
+               disabled:opacity-50 disabled:cursor-not-allowed"
+        onclick="generateResearchReport()">
+        <span id="btn-report-text">⚡ 生成研报</span>
+      </button>
+      <span class="font-mono text-[0.55rem] tracking-wider text-gray-600" id="report-status">就绪 — 点击生成市场分析</span>
+    </div>
+
+    <!-- Prediction Tracker — WTI + Gold forecast vs actual -->
+    <div id="prediction-tracker" class="hidden frame-section rounded-sm p-5 mb-8 scanline-subtle">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-2">
+          <iconify-icon icon="solar:target-linear" class="text-[#e8c382] text-lg"></iconify-icon>
+          <span class="font-mono text-[0.55rem] tracking-[0.15em] text-gray-400">预测追踪 · PREDICTION TRACKER</span>
+        </div>
+        <span class="font-mono text-[0.5rem] text-gray-600" id="prediction-age"></span>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- WTI Prediction -->
+        <div class="bg-white/[0.02] rounded-sm p-4 border border-white/5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-gloock text-lg text-white">🛢️ WTI 原油</span>
+            <span class="font-mono text-[0.5rem] text-gray-600" id="pred-wti-time"></span>
+          </div>
+          <div class="grid grid-cols-3 gap-3 text-center">
+            <div>
+              <div class="font-mono text-[0.5rem] tracking-wider text-gray-500 mb-1">预测方向</div>
+              <div class="font-bebas text-xl tracking-tight" id="pred-wti-dir">--</div>
+            </div>
+            <div>
+              <div class="font-mono text-[0.5rem] tracking-wider text-gray-500 mb-1">预测区间</div>
+              <div class="font-mono text-xs text-white" id="pred-wti-range">--</div>
+            </div>
+            <div>
+              <div class="font-mono text-[0.5rem] tracking-wider text-gray-500 mb-1">当前价格</div>
+              <div class="font-mono text-xs text-white" id="pred-wti-now">--</div>
+            </div>
+          </div>
+          <div class="mt-3 flex items-center gap-2">
+            <span class="font-mono text-[0.5rem] tracking-wider text-gray-500">准确度:</span>
+            <div class="flex-1 h-1.5 rounded-full bg-gray-800 overflow-hidden">
+              <div class="h-full rounded-full transition-all duration-700" id="pred-wti-bar" style="width:0%"></div>
+            </div>
+            <span class="font-mono text-[0.55rem]" id="pred-wti-acc">--</span>
+          </div>
+        </div>
+        <!-- Gold Prediction -->
+        <div class="bg-white/[0.02] rounded-sm p-4 border border-white/5">
+          <div class="flex items-center justify-between mb-2">
+            <span class="font-gloock text-lg text-white">🥇 黄金 XAU</span>
+            <span class="font-mono text-[0.5rem] text-gray-600" id="pred-gold-time"></span>
+          </div>
+          <div class="grid grid-cols-3 gap-3 text-center">
+            <div>
+              <div class="font-mono text-[0.5rem] tracking-wider text-gray-500 mb-1">预测方向</div>
+              <div class="font-bebas text-xl tracking-tight" id="pred-gold-dir">--</div>
+            </div>
+            <div>
+              <div class="font-mono text-[0.5rem] tracking-wider text-gray-500 mb-1">预测区间</div>
+              <div class="font-mono text-xs text-white" id="pred-gold-range">--</div>
+            </div>
+            <div>
+              <div class="font-mono text-[0.5rem] tracking-wider text-gray-500 mb-1">当前价格</div>
+              <div class="font-mono text-xs text-white" id="pred-gold-now">--</div>
+            </div>
+          </div>
+          <div class="mt-3 flex items-center gap-2">
+            <span class="font-mono text-[0.5rem] tracking-wider text-gray-500">准确度:</span>
+            <div class="flex-1 h-1.5 rounded-full bg-gray-800 overflow-hidden">
+              <div class="h-full rounded-full transition-all duration-700" id="pred-gold-bar" style="width:0%"></div>
+            </div>
+            <span class="font-mono text-[0.55rem]" id="pred-gold-acc">--</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Report Display -->
+    <div id="report-container" class="hidden frame-section rounded-sm p-8 scanline-subtle">
+      <div class="flex items-center justify-between mb-6 pb-4 border-b border-white/10">
+        <div>
+          <div class="font-mono text-[0.55rem] tracking-[0.2em] text-[#e8c382] mb-1">RESEARCH BRIEF</div>
+          <div class="font-gloock text-2xl text-white" id="report-title">市场日报</div>
+        </div>
+        <div class="text-right">
+          <div class="font-mono text-[0.55rem] tracking-wider text-gray-500" id="report-timestamp"></div>
+          <div class="font-mono text-[0.5rem] text-gray-600 mt-0.5">Powered by DeepSeek</div>
+        </div>
+      </div>
+      <div id="report-content" class="prose prose-invert max-w-none
+        font-manrope text-sm leading-relaxed text-gray-300
+        [&_h2]:font-gloock [&_h2]:text-xl [&_h2]:text-[#e8c382] [&_h2]:mt-8 [&_h2]:mb-3
+        [&_h3]:font-bebas [&_h3]:text-lg [&_h3]:text-white [&_h3]:mt-6 [&_h3]:mb-2 [&_h3]:tracking-wider
+        [&_strong]:text-white [&_strong]:font-semibold
+        [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1
+        [&_li]:text-gray-400
+        [&_code]:font-mono [&_code]:text-xs [&_code]:bg-white/5 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded-sm
+        [&_table]:w-full [&_table]:text-xs [&_table]:font-mono
+        [&_th]:text-left [&_th]:text-[#e8c382] [&_th]:py-2 [&_th]:border-b [&_th]:border-white/10
+        [&_td]:py-2 [&_td]:border-b [&_td]:border-white/5
+        [&_.up]:text-[#4af626] [&_.down]:text-[#e61919]">
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ========== FOOTER ========== -->
+<footer class="relative z-10 border-t border-white/5 py-8 mt-16">
+  <div class="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <div class="header-logo w-8 h-8 flex items-center justify-center rounded-sm select-none" style="border: 1px solid rgba(255,255,255,0.08);">
+        <span class="font-gloock text-sm text-gradient-gold leading-none">VL</span>
+      </div>
+      <span class="font-mono text-[0.55rem] tracking-[0.15em] text-gray-600">MARKET TERMINAL v2.4 · REV 2026-07-14</span>
+    </div>
+    <div class="flex gap-6 text-[0.55rem] font-mono tracking-wider text-gray-600">
+      <span>数据延迟: ≤15min</span>
+      <span>API: Finnhub</span>
+      <span>引擎: HYBRID_v3</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ================================================================ -->
+<!-- SCRIPTS -->
+<!-- ================================================================ -->
+
+<!-- ========== MARKET DATA ENGINE v2 — Real API + Simulated Fallback ========== -->
+<script>
+// ═══════════════════════════════════════════
+// CONFIGURATION — Replace API keys here
+// ═══════════════════════════════════════════
+const API_KEYS = {
+  FINNHUB: (window.API_KEYS && window.API_KEYS.FINNHUB) || '',
+};
+
+// ═══════════════════════════════════════════
+// SYMBOL REGISTRY — every symbol now has a real data source
+// fh  = Finnhub symbol    td = Twelve Data symbol    sim* = backup
+// ═══════════════════════════════════════════
+const SYMBOL_MAP = {
+  // --- Indices (now served by TradingView widgets) — remove from data engine ---
+  'US10Y': { fh: '^TNX',         name: 'US 10Y Yield',    unit: '%',   digits: 2, simPrice: 4.32,   spread: 0.01, simVol: 0.012 },
+  'US3M':  { fh: '^IRX',         name: 'US 3M T-Bill',    unit: '%',   digits: 2, simPrice: 5.28,   spread: 0.01, simVol: 0.015 },
+  'DXY':   { fh: 'DX-Y.NYB',     name: 'US Dollar Index', unit: '',    digits: 2, simPrice: 104.25, spread: 0.02, simVol: 0.005 },
+  'BRENT': { fh: 'OANDA:BCO_USD',name: 'Brent Crude Oil', unit: 'USD/bbl',digits:2,simPrice: 82.30, spread: 0.03, simVol: 0.014 },
+  'EURUSD':{ fh: 'OANDA:EUR_USD',name: 'EUR/USD',         unit: '',    digits: 4, simPrice: 1.0850, spread: 0.0001,simVol: 0.005 },
+  'COPPER':{ fh: 'OANDA:XCu_USD',name: 'Copper Spot',     unit: 'USD/lb',digits:2, simPrice: 4.12,   spread: 0.002,simVol: 0.018 },
+  // --- Forex / Metals (Finnhub /forex/candle) ---
+  'GOLD':  { fh: 'OANDA:XAU_USD',name: 'Gold Spot',       unit: 'USD/oz',digits:2, simPrice: 2350.80,spread: 0.50, simVol: 0.006 },
+  'SILVER':{ fh: 'OANDA:XAG_USD',name: 'Silver Spot',     unit: 'USD/oz',digits:2, simPrice: 27.85,  spread: 0.03, simVol: 0.014 },
+  'PLAT':  { fh: 'OANDA:XPT_USD',name: 'Platinum Spot',   unit: 'USD/oz',digits:2, simPrice: 985.20, spread: 1.20, simVol: 0.012 },
+  'PALL':  { fh: 'OANDA:XPD_USD',name: 'Palladium Spot',  unit: 'USD/oz',digits:2, simPrice: 1020.50,spread: 2.50, simVol: 0.016 },
+  'WTI':   { fh: 'OANDA:WTI_USD',name: 'WTI Crude Oil',   unit: 'USD/bbl',digits:2,simPrice: 78.50,  spread: 0.03, simVol: 0.015 },
+  // --- Crypto (Finnhub /crypto/candle) ---
+  'BTC':   { fh: 'BINANCE:BTCUSDT',name:'Bitcoin',         unit: 'USD',  digits:0, simPrice: 67250,  spread: 25.0, simVol: 0.025 },
+  // --- Indices (Finnhub) ---
+};
+
+// ═══════════════════════════════════════════
+// Finnhub API Client — uses correct endpoint per asset class
+// ═══════════════════════════════════════════
+class FinnhubClient {
+  constructor(apiKey) {
+    this.apiKey = apiKey;
+    this.base = 'https://finnhub.io/api/v1';
+    this.ready = !!apiKey && apiKey.length > 10 && !apiKey.startsWith('YOUR_');
+  }
+
+  // Detect asset type from symbol
+  _classify(fh) {
+    if (fh.startsWith('OANDA:')) return 'forex';
+    if (fh.startsWith('BINANCE:')) return 'crypto';
+    return 'index'; // ^GSPC, ^NDX, ^VIX, ^HSI, ^N225
+  }
+
+  // Get current price from daily candle for forex/crypto
+  async _fetchFromCandle(endpoint, fhSymbol) {
+    const to = Math.floor(Date.now() / 1000);
+    const from = to - 86400 * 10; // 10 days — ensures ≥2 trading days even over long weekends
+    const url = `${this.base}/${endpoint}?symbol=${encodeURIComponent(fhSymbol)}&resolution=D&from=${from}&to=${to}&token=${this.apiKey}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Finnhub candle ${res.status} for ${fhSymbol}`);
+    const d = await res.json();
+    if (d.s !== 'ok' || !d.c || d.c.length === 0) return null;
+    const lastIdx = d.c.length - 1;
+    const price = d.c[lastIdx];
+    if (!isFinite(price) || price <= 0) return null;
+    const prevClose = lastIdx > 0 && isFinite(d.c[lastIdx - 1]) && d.c[lastIdx - 1] > 0
+      ? d.c[lastIdx - 1] : price;
+    const change = price - prevClose;
+    const changePct = prevClose > 0 ? (change / prevClose) * 100 : 0;
+    return {
+      price, change, changePct,
+      high: d.h[lastIdx], low: d.l[lastIdx],
+      open: d.o[lastIdx], prevClose,
+      source: 'finnhub',
+    };
+  }
+
+  // Get quote from /quote endpoint (indices/stocks)
+  async _fetchQuote(fhSymbol) {
+    const url = `${this.base}/quote?symbol=${encodeURIComponent(fhSymbol)}&token=${this.apiKey}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Finnhub quote ${res.status} for ${fhSymbol}`);
+    const d = await res.json();
+    // Validate — reject all-zero or missing-current responses
+    if (!isFinite(d.c) || d.c <= 0) return null;
+    if (d.c === 0 && d.h === 0 && d.l === 0 && d.o === 0) return null;
+    // Safely compute prevClose — pc=0 is common for some indices, fall back to open
+    const pc = isFinite(d.pc) && d.pc > 0 ? d.pc : (isFinite(d.o) && d.o > 0 ? d.o : d.c);
+    return {
+      price: d.c,
+      change: isFinite(d.d) ? d.d : (d.c - pc),
+      changePct: isFinite(d.dp) ? d.dp : (pc > 0 ? ((d.c - pc) / pc) * 100 : 0),
+      high: d.h, low: d.l,
+      open: d.o, prevClose: pc,
+      source: 'finnhub',
+    };
+  }
+
+  // Unified fetch — routes to correct endpoint
+  async fetchQuote(fhSymbol) {
+    const type = this._classify(fhSymbol);
+    if (type === 'forex') {
+      return this._fetchFromCandle('forex/candle', fhSymbol);
+    } else if (type === 'crypto') {
+      return this._fetchFromCandle('crypto/candle', fhSymbol);
+    } else {
+      return this._fetchQuote(fhSymbol);
+    }
+  }
+
+  // Batch fetch with rate limiting
+  async fetchBatch(fhSymbols) {
+    const results = {};
+    const chunkSize = 8;
+    for (let i = 0; i < fhSymbols.length; i += chunkSize) {
+      const chunk = fhSymbols.slice(i, i + chunkSize);
+      const chunkResults = await Promise.allSettled(
+        chunk.map(sym => this.fetchQuote(sym))
+      );
+      chunk.forEach((sym, idx) => {
+        const r = chunkResults[idx];
+        results[sym] = r.status === 'fulfilled' ? r.value : null;
+      });
+      if (i + chunkSize < fhSymbols.length) {
+        await new Promise(r => setTimeout(r, 1500));
+      }
+    }
+    return results;
+  }
+}
+
+// ═══════════════════════════════════════════
+// Simulated Data Generator (last-resort fallback)
+// ═══════════════════════════════════════════
+class SimulatedAdapter {
+  tick(currentPrices) {
+    const updates = {};
+    for (const [key, cfg] of Object.entries(SYMBOL_MAP)) {
+      if (!cfg.simPrice) continue;
+      let prev = currentPrices[key];
+      // Guard: reset to simPrice if corrupted
+      if (!isFinite(prev) || prev <= 0) prev = cfg.simPrice;
+      const vol = cfg.simVol || 0.01;
+      const brownian = (Math.random() - 0.5) * 2 * vol;
+      const meanRev = (cfg.simPrice - prev) * 0.002;
+      let newPrice = prev * (1 + brownian + meanRev);
+      if (!isFinite(newPrice) || newPrice <= 0) newPrice = cfg.simPrice;
+      updates[key] = newPrice;
+    }
+    return updates;
+  }
+}
+
+// ═══════════════════════════════════════════
+// MARKET DATA ENGINE v2
+// ═══════════════════════════════════════════
+class MarketDataEngine {
+  constructor() {
+    this.finnhub = new FinnhubClient(API_KEYS.FINNHUB);
+    this.sim = new SimulatedAdapter();
+
+    this.prices = {};
+    this.history = {};
+    this.source = {};     // 'finnhub' | 'simulated'
+    this.lastFetch = {};
+    this.prevClose = {};
+
+    // Build Finnhub symbol list
+    this.fhSymbols = [];
+    for (const [key, cfg] of Object.entries(SYMBOL_MAP)) {
+      if (cfg.fh) this.fhSymbols.push({
+        key,
+        fh: cfg.fh,
+        fallbackFh: cfg.fhFallback || null,
+      });
+    }
+
+    // Init all symbols with seed data
+    for (const [key, cfg] of Object.entries(SYMBOL_MAP)) {
+      const seedPrice = cfg.simPrice || 100;
+      this.prices[key] = seedPrice;
+      this.source[key] = 'simulated';
+      this.history[key] = [];
+      for (let i = 60; i >= 0; i--) {
+        this.history[key].push(seedPrice * (1 + (Math.random() - 0.5) * 0.02));
+      }
+    }
+
+    this.apiCallsToday = 0;
+    this.connected = false;
+  }
+
+  _applyPrice(key, data, sourceLabel) {
+    // Validate — reject invalid or suspicious data
+    if (!data || !isFinite(data.price) || data.price <= 0) return;
+    // Quality check: reject if API price deviates >25% from simPrice baseline
+    // Free-tier APIs can return garbage; this is the last line of defense
+    const baseline = SYMBOL_MAP[key]?.simPrice;
+    if (baseline && baseline > 0) {
+      const deviation = Math.abs(data.price - baseline) / baseline;
+      if (deviation > 0.25) {
+        console.warn(`Data quality reject: ${key} API=${data.price} sim=${baseline} deviation=${(deviation*100).toFixed(0)}%`);
+        return;
+      }
+    }
+    const oldPrice = this.prices[key];
+    this.prices[key] = data.price;
+    // Only store prevClose if it's within a reasonable range (±30% of current price)
+    if (isFinite(data.prevClose) && data.prevClose > 0) {
+      const pcDev = Math.abs(data.prevClose - data.price) / data.price;
+      if (pcDev < 0.3) this.prevClose[key] = data.prevClose;
+    }
+    this.source[key] = sourceLabel;
+    this.lastFetch[key] = Date.now();
+
+    const hist = this.history[key];
+    if (hist.length > 0 && this.source[key] !== 'simulated' && Math.abs(hist[hist.length - 1] - oldPrice) < 0.01) {
+      hist[hist.length - 1] = data.price;
+    } else {
+      hist.push(data.price);
+    }
+    if (hist.length > 120) hist.shift();
+  }
+
+  // Main update — called every 30s
+  async fetchRealData() {
+    let successCount = 0;
+
+    // 1) Finnhub: indices, forex, crypto
+    if (this.finnhub.ready) {
+      try {
+        const fhList = this.fhSymbols.map(s => s.fh);
+        const results = await this.finnhub.fetchBatch(fhList);
+
+        for (const item of this.fhSymbols) {
+          let data = results[item.fh];
+          // Fallback: DX-Y.NYB might not work → try OANDA:USD_JPY
+          if ((!data || !data.price) && item.fallbackFh) {
+            try {
+              data = await this.finnhub.fetchQuote(item.fallbackFh);
+            } catch {}
+          }
+
+          if (data && data.price) {
+            this._applyPrice(item.key, data, 'finnhub');
+            successCount++;
+          }
+        }
+      } catch (e) { console.warn('Finnhub batch failed:', e.message); }
+    }
+
+    this.connected = successCount > 0;
+    return successCount > 0;
+  }
+
+  // Sim for symbols still without live data
+  tickSimulated() {
+    const updates = this.sim.tick(this.prices);
+    for (const [key, price] of Object.entries(updates)) {
+      // Only override if no live data for this symbol
+      if (this.source[key] === 'simulated') {
+        this.prices[key] = price;
+        this.history[key].push(price);
+        if (this.history[key].length > 120) this.history[key].shift();
+      }
+    }
+  }
+
+  getPrice(key) {
+    const p = this.prices[key];
+    return (isFinite(p) && p > 0) ? p : (SYMBOL_MAP[key]?.simPrice || 100);
+  }
+  getUnit(key)   { return SYMBOL_MAP[key]?.unit || ''; }
+  getDigits(key) { return SYMBOL_MAP[key]?.digits || 2; }
+  getSpread(key) { return SYMBOL_MAP[key]?.spread || 0; }
+
+  // Single source of truth — getChangePercent is the canonical calculation,
+  // getChange derives from it to guarantee consistency
+  _calcChangePct(key) {
+    const price = this.getPrice(key);
+    const hist = this.history[key];
+    if (!hist || hist.length < 2) return 0;
+    const prev = this.prevClose[key];
+    const source = this.source[key];
+    // Use prevClose if valid and we have live API data
+    if (isFinite(prev) && prev > 0 && prev !== price && source === 'finnhub') {
+      const pct = ((price - prev) / prev) * 100;
+      if (isFinite(pct)) return pct;
+    }
+    // Fallback: percent change between last two different history points
+    for (let i = hist.length - 2; i >= 0; i--) {
+      const prev2 = hist[i];
+      if (!isFinite(prev2) || prev2 <= 0) continue;
+      if (Math.abs(prev2 - price) < 0.0001) continue; // skip same-value points
+      const pct = ((price - prev2) / prev2) * 100;
+      if (isFinite(pct)) return pct;
+    }
+    return 0;
+  }
+
+  getChangePercent(key) {
+    return this._calcChangePct(key);
+  }
+
+  getChange(key) {
+    const pct = this._calcChangePct(key);
+    return this.getPrice(key) * (pct / 100);
+  }
+
+  getHistory(key, n = 60) { return (this.history[key] || []).slice(-n); }
+  getSource(key)  { return this.source[key] || 'simulated'; }
+  isConnected()   { return this.connected; }
+
+  getHighLow(key) {
+    const h = this.getHistory(key, 60);
+    return { high: h.length > 0 ? Math.max(...h) : 0, low: h.length > 0 ? Math.min(...h) : 0 };
+  }
+
+  getVolume(key) {
+    return Math.floor(Math.random() * 50000 + 10000) * ((this.prices[key] || 100) / 100);
+  }
+}
+
+const engine = new MarketDataEngine();
+</script>
+
+<!-- ========== MARKET SENTIMENT ENGINE ========== -->
+<script>
+// ═══════════════════════════════════════════
+// Sentiment Engine — fetches & calculates market mood indicators
+// ═══════════════════════════════════════════
+class SentimentEngine {
+  constructor() {
+    this.data = {
+      fng:  { value: 50, label: 'Neutral', source: 'alt:me',    updated: 0 },
+      ausr: { value: 85, label: 'Neutral', source: 'XAU÷XAG',   updated: 0 },
+      yc:   { value: -0.5,label: 'Normal', source: '^TNX-^IRX', updated: 0 },
+    };
+  }
+
+  // Fetch Crypto Fear & Greed from alternative.me (free, no auth)
+  async fetchFearGreed() {
+    try {
+      const res = await fetch('https://api.alternative.me/fng/?limit=1');
+      if (!res.ok) return null;
+      const d = (await res.json()).data[0];
+      return {
+        value: parseInt(d.value),
+        label: d.value_classification,
+        timestamp: parseInt(d.timestamp) * 1000,
+      };
+    } catch (e) { console.warn('F&G fetch failed:', e.message); return null; }
+  }
+
+  // Interpret Gold/Silver Ratio — thresholds from historical data
+  interpretAuSr(ratio) {
+    if (ratio > 90) return { label: '极度避险',     zone: 0.05 };
+    if (ratio > 80) return { label: '强烈避险',     zone: 0.15 };
+    if (ratio > 70) return { label: '偏向避险',     zone: 0.30 };
+    if (ratio > 55) return { label: '中性偏稳',     zone: 0.50 };
+    if (ratio > 40) return { label: '风险偏好',     zone: 0.70 };
+    return           { label: '强烈风险偏好',       zone: 0.90 };
+  }
+
+  // Yield Curve 10Y-3M spread — Federal Reserve recession indicator
+  // Negative (inverted) = recession signal; positive = normal
+  interpretYieldCurve(spreadBps) {
+    if (spreadBps < -100) return { label: '深度倒挂',  zone: 0.05 };
+    if (spreadBps <  -50) return { label: '显著倒挂',  zone: 0.12 };
+    if (spreadBps <    0) return { label: '轻微倒挂',  zone: 0.25 };
+    if (spreadBps <   50) return { label: '平坦',      zone: 0.45 };
+    if (spreadBps <  150) return { label: '正常',      zone: 0.70 };
+    return                  { label: '陡峭',           zone: 0.90 };
+  }
+
+  // Calculate all sentiment indicators from current market prices
+  update(engineData) {
+    const now = Date.now();
+
+    // Gold/Silver Ratio
+    const auSr = (engineData.prices['GOLD'] || 2350) / (engineData.prices['SILVER'] || 28);
+    const auSrI = this.interpretAuSr(auSr);
+    this.data.ausr = { value: auSr, label: auSrI.label, zone: auSrI.zone, source: 'XAU÷XAG', updated: now };
+
+    // Yield Curve 10Y-3M spread (in basis points)
+    const y10 = engineData.prices['US10Y'] || 4.32;
+    const y3m = engineData.prices['US3M'] || 5.28;
+    const spreadBps = (y10 - y3m) * 100; // convert to basis points
+    const ycI = this.interpretYieldCurve(spreadBps);
+    this.data.yc = { value: spreadBps, label: ycI.label, zone: ycI.zone, source: '^TNX-^IRX', updated: now };
+  }
+
+  async refreshFearGreed() {
+    const fng = await this.fetchFearGreed();
+    if (fng) {
+      this.data.fng = { value: fng.value, label: fng.label, zone: fng.value / 100, source: 'alt:me', updated: Date.now() };
+    }
+  }
+
+  getData() { return this.data; }
+}
+
+const sentiment = new SentimentEngine();
+</script>
+
+<!-- ========== THREE.JS SCENES ========== -->
+<script>
+// === HERO WIREFRAME GLOBE ===
+(function initHeroScene() {
+  const canvas = document.getElementById('heroCanvas');
+  if (!canvas) return;
+  const container = canvas.parentElement;
+  canvas.width = container.clientWidth;
+  canvas.height = container.clientHeight;
+
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setSize(canvas.width, canvas.height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, canvas.width / canvas.height, 0.1, 100);
+  camera.position.set(3, 1.5, 6);
+  camera.lookAt(0, 0, 0);
+
+  // Lighting
+  scene.add(new THREE.AmbientLight(0x222244, 0.5));
+  const dirLight = new THREE.DirectionalLight(0xe8c382, 0.8);
+  dirLight.position.set(5, 5, 5);
+  scene.add(dirLight);
+  const dirLight2 = new THREE.DirectionalLight(0x4466aa, 0.4);
+  dirLight2.position.set(-3, -1, -3);
+  scene.add(dirLight2);
+
+  // Main wireframe icosahedron (globe)
+  const globeGeo = new THREE.IcosahedronGeometry(1.6, 3);
+  const globeMat = new THREE.MeshBasicMaterial({ color: 0xe8c382, wireframe: true, transparent: true, opacity: 0.15 });
+  const globe = new THREE.Mesh(globeGeo, globeMat);
+  scene.add(globe);
+
+  // Inner wireframe (denser)
+  const innerGeo = new THREE.IcosahedronGeometry(1.2, 2);
+  const innerMat = new THREE.MeshBasicMaterial({ color: 0x4466aa, wireframe: true, transparent: true, opacity: 0.1 });
+  const inner = new THREE.Mesh(innerGeo, innerMat);
+  scene.add(inner);
+
+  // Orbiting ring
+  const ringGeo = new THREE.TorusGeometry(1.9, 0.015, 16, 100);
+  const ringMat = new THREE.MeshBasicMaterial({ color: 0xe8c382, transparent: true, opacity: 0.3 });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.rotation.x = Math.PI / 2.5;
+  scene.add(ring);
+
+  // Second ring
+  const ring2Geo = new THREE.TorusGeometry(2.1, 0.01, 16, 80);
+  const ring2Mat = new THREE.MeshBasicMaterial({ color: 0x8899cc, transparent: true, opacity: 0.2 });
+  const ring2 = new THREE.Mesh(ring2Geo, ring2Mat);
+  ring2.rotation.x = -Math.PI / 3;
+  ring2.rotation.y = Math.PI / 4;
+  scene.add(ring2);
+
+  // Floating particles
+  const particlesGeo = new THREE.BufferGeometry();
+  const particlesCount = 200;
+  const positions = new Float32Array(particlesCount * 3);
+  for (let i = 0; i < particlesCount; i++) {
+    positions[i * 3] = (Math.random() - 0.5) * 6;
+    positions[i * 3 + 1] = (Math.random() - 0.5) * 6;
+    positions[i * 3 + 2] = (Math.random() - 0.5) * 6;
+  }
+  particlesGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const particlesMat = new THREE.PointsMaterial({ color: 0xe8c382, size: 0.02, transparent: true, opacity: 0.6 });
+  const particles = new THREE.Points(particlesGeo, particlesMat);
+  scene.add(particles);
+
+  // Animate
+  function animate(time) {
+    requestAnimationFrame(animate);
+    const t = time * 0.001;
+    globe.rotation.y = t * 0.15;
+    globe.rotation.x = Math.sin(t * 0.2) * 0.1;
+    inner.rotation.y = -t * 0.2;
+    inner.rotation.z = Math.cos(t * 0.15) * 0.1;
+    ring.rotation.z += 0.003;
+    ring2.rotation.z -= 0.002;
+    particles.rotation.y += 0.001;
+    particles.rotation.x += 0.0005;
+    renderer.render(scene, camera);
+  }
+  requestAnimationFrame(animate);
+
+  // Resize
+  window.addEventListener('resize', () => {
+    canvas.width = container.clientWidth;
+    canvas.height = container.clientHeight;
+    renderer.setSize(canvas.width, canvas.height);
+    camera.aspect = canvas.width / canvas.height;
+    camera.updateProjectionMatrix();
+  });
+})();
+
+// === COMMODITY DATA CRYSTALS ===
+const crystalConfigs = [
+  { id: 'crystalCanvas1', geo: new THREE.OctahedronGeometry(0.7, 0), color: 0xff6b35, rotSpeed: [0.01, 0.015, 0.005] },
+];
+
+crystalConfigs.forEach(cfg => {
+  const canvas = document.getElementById(cfg.id);
+  if (!canvas) return;
+  const w = 160, h = 160;
+
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setSize(w, h);
+  renderer.setPixelRatio(2);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(50, w / h, 0.1, 10);
+  camera.position.set(1.2, 0.8, 2);
+  camera.lookAt(0, 0, 0);
+
+  scene.add(new THREE.AmbientLight(0x222233, 0.4));
+  const light = new THREE.DirectionalLight(cfg.color, 0.8);
+  light.position.set(2, 2, 2);
+  scene.add(light);
+
+  const mat = new THREE.MeshBasicMaterial({ color: cfg.color, wireframe: true, transparent: true, opacity: 0.5 });
+  const crystal = new THREE.Mesh(cfg.geo, mat);
+  scene.add(crystal);
+
+  // Inner glow particles
+  const pGeo = new THREE.BufferGeometry();
+  const pPositions = new Float32Array(40 * 3);
+  for (let i = 0; i < 40; i++) {
+    pPositions[i * 3] = (Math.random() - 0.5) * 1.5;
+    pPositions[i * 3 + 1] = (Math.random() - 0.5) * 1.5;
+    pPositions[i * 3 + 2] = (Math.random() - 0.5) * 1.5;
+  }
+  pGeo.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
+  const pMat = new THREE.PointsMaterial({ color: cfg.color, size: 0.03, transparent: true, opacity: 0.5 });
+  const points = new THREE.Points(pGeo, pMat);
+  scene.add(points);
+
+  function animate(time) {
+    requestAnimationFrame(animate);
+    const t = time * 0.001;
+    crystal.rotation.x += cfg.rotSpeed[0];
+    crystal.rotation.y += cfg.rotSpeed[1];
+    crystal.rotation.z += cfg.rotSpeed[2];
+    points.rotation.y += 0.005;
+    points.rotation.x += 0.003;
+    // Pulse opacity
+    const pulse = 0.4 + Math.sin(t * 1.5) * 0.15;
+    mat.opacity = pulse;
+    renderer.render(scene, camera);
+  }
+  requestAnimationFrame(animate);
+});
+</script>
+
+<!-- ========== UPDATE UI WITH DATA ========== -->
+<script>
+function fmtPrice(key, val) {
+  if (!isFinite(val) || val <= 0) { val = 0; }
+  const d = engine.getDigits(key);
+  if (d === 0) return Math.round(val).toLocaleString('zh-CN');
+  return val.toFixed(d);
+}
+
+function fmtChange(val, percent, key) {
+  if (!isFinite(val)) val = 0;
+  if (!isFinite(percent)) percent = 0;
+  const sign = val >= 0 ? '+' : '';
+  const color = val >= 0 ? '#4af626' : '#e61919';
+  return `<span style="color:${color}">${sign}${fmtPrice(key, val)} (${sign}${percent.toFixed(2)}%)</span>`;
+}
+
+function updateUI() {
+  // Ticker strip — rebuild each update for seamless animation
+  const stripSymbols = ['WTI','BRENT','GOLD','SILVER','PLAT','PALL','BTC','DXY','EURUSD','US10Y','US3M'];
+  const stripEl = document.getElementById('ticker-strip');
+  if (stripEl) {
+    const items = stripSymbols.map(s => {
+      const p = engine.getPrice(s);
+      const ch = engine.getChangePercent(s);
+      const color = ch >= 0 ? '#4af626' : '#e61919';
+      return `<span class="font-mono text-xs tracking-wider inline-flex items-center gap-2 flex-shrink-0">
+        <span class="text-gray-600">${s}</span>
+        <span class="text-white">${fmtPrice(s, p)}</span>
+        <span style="color:${color};font-size:0.65rem">${ch >= 0 ? '▲' : '▼'}${Math.abs(ch).toFixed(2)}%</span>
+      </span>`;
+    });
+    stripEl.innerHTML = items.join('') + items.join('');
+  }
+
+  // KPI cards
+  ['EURUSD','DXY','US10Y','BTC'].forEach(k => {
+    const p = engine.getPrice(k);
+    const ch = engine.getChange(k);
+    const chp = engine.getChangePercent(k);
+    const priceEl = document.getElementById(`kpi-${k.toLowerCase()}`);
+    const changeEl = document.getElementById(`kpi-${k.toLowerCase()}-change`);
+    if (priceEl) priceEl.textContent = fmtPrice(k, p);
+    if (changeEl) changeEl.innerHTML = fmtChange(ch, chp, k);
+  });
+
+  // Commodities
+  // Commodities (WTI only)
+  (() => {
+    const key = 'WTI', k = 'oil';
+    const p = engine.getPrice(key);
+    const ch = engine.getChange(key);
+    const chp = engine.getChangePercent(key);
+    const hl = engine.getHighLow(key);
+    const priceEl = document.getElementById(`price-${k}`);
+    const changeEl = document.getElementById(`change-${k}`);
+    if (priceEl) priceEl.textContent = fmtPrice(key, p);
+    if (changeEl) changeEl.innerHTML = fmtChange(ch, chp, key);
+    const highEl = document.getElementById(`high-${k}`);
+    const lowEl = document.getElementById(`low-${k}`);
+    const volEl = document.getElementById(`vol-${k}`);
+    if (highEl) highEl.textContent = fmtPrice(key, hl.high);
+    if (lowEl) lowEl.textContent = fmtPrice(key, hl.low);
+    if (volEl) volEl.textContent = Math.floor(engine.getVolume(key)).toLocaleString('zh-CN');
+  })();
+
+  // Precious metals
+  ['GOLD','SILVER','PLAT','PALL'].forEach(k => {
+    const nameMap = { GOLD: 'gold', SILVER: 'silver', PLAT: 'platinum', PALL: 'palladium' };
+    const name = nameMap[k];
+    const p = engine.getPrice(k);
+    const ch = engine.getChange(k);
+    const chp = engine.getChangePercent(k);
+    const priceEl = document.getElementById(`metal-price-${name}`);
+    const changeEl = document.getElementById(`metal-change-${name}`);
+    if (priceEl) priceEl.textContent = fmtPrice(k, p);
+    if (changeEl) changeEl.innerHTML = fmtChange(ch, chp, k);
+    const spread = engine.getSpread(k);
+    const bidEl = document.getElementById(`bid-${name}`);
+    const askEl = document.getElementById(`ask-${name}`);
+    const spreadEl = document.getElementById(`spread-${name}`);
+    if (bidEl) bidEl.textContent = fmtPrice(k, p - spread/2);
+    if (askEl) askEl.textContent = fmtPrice(k, p + spread/2);
+    if (spreadEl) spreadEl.textContent = spread.toFixed(2);
+
+    // Update sparkline
+    drawSparkline(`sparkline-${name}`, engine.getHistory(k, 60), k);
+  });
+
+  // Metal composite
+  const goldP = engine.getPrice('GOLD');
+  const silverP = engine.getPrice('SILVER');
+  const platP = engine.getPrice('PLAT');
+  const pallP = engine.getPrice('PALL');
+  const composite = (goldP * 0.4 + silverP * 0.15 + platP * 0.2 + pallP * 0.25);
+  const compEl = document.getElementById('metal-composite');
+  if (compEl) compEl.textContent = composite.toFixed(2);
+
+  // Indices now served by TradingView widgets — no local update needed
+
+  // Header time
+  const now = new Date();
+  document.getElementById('header-time').textContent =
+    now.toLocaleTimeString('zh-CN', { hour12: false }) + ' UTC+8';
+}
+
+function drawSparkline(svgId, data, key) {
+  const svg = document.getElementById(svgId);
+  if (!svg || data.length < 2) return;
+  const w = 400, h = 64, pad = 4;
+  const min = Math.min(...data) * 0.998;
+  const max = Math.max(...data) * 1.002;
+  const range = max - min || 1;
+  const points = data.map((v, i) => {
+    const x = pad + (i / (data.length - 1)) * (w - pad * 2);
+    const y = h - pad - ((v - min) / range) * (h - pad * 2);
+    return `${x},${y}`;
+  });
+  const color = data[data.length - 1] >= data[0] ? '#4af626' : '#e61919';
+  // Fill area
+  const fillPoints = points.join(' ') + ` ${w - pad},${h - pad} ${pad},${h - pad}`;
+  svg.innerHTML = `
+    <defs>
+      <linearGradient id="fg-${svgId}" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="${color}" stop-opacity="0.2"/>
+        <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <polygon points="${fillPoints}" fill="url(#fg-${svgId})"/>
+    <polyline points="${points.join(' ')}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  `;
+}
+
+// Mini sparklines removed — TradingView handles chart rendering
+
+// Indices chart replaced by TradingView widget — no canvas needed
+updateUI();
+
+// ═══════════════════════════════════════════
+// UPDATE LOOP — Real API (30s) + Sim fallback (2s)
+// ═══════════════════════════════════════════
+
+// Immediate first fetch on load
+(async function init() {
+  // Fetch real prices + fear & greed in parallel
+  const [, fngOk] = await Promise.all([
+    engine.fetchRealData(),
+    sentiment.refreshFearGreed().catch(() => false),
+  ]);
+  console.log(engine.isConnected() ? 'Finnhub API connected' : 'Using simulated data');
+  sentiment.update(engine); // calculate ratios from prices
+  updateUI();
+  updateSentimentUI();
+  updateConnectionStatus();
+})();
+
+// Real API every 30 seconds
+setInterval(async () => {
+  await engine.fetchRealData();
+  sentiment.update(engine);
+  updateUI();
+  updateSentimentUI();
+  updateConnectionStatus();
+}, 30000);
+
+// Simulated data for uncovered symbols every 2 seconds
+setInterval(() => {
+  engine.tickSimulated();
+  sentiment.update(engine);
+  updateUI();
+  updateSentimentUI();
+}, 2000);
+
+// Fear & Greed Index updates every 5 minutes (API updates hourly)
+setInterval(async () => {
+  await sentiment.refreshFearGreed();
+  sentiment.update(engine);
+  updateSentimentUI();
+}, 300000);
+
+// ═══════════════════════════════════════════
+// Sentiment UI Renderer
+// ═══════════════════════════════════════════
+function updateSentimentUI() {
+  const d = sentiment.getData();
+
+  function renderCard(id, data, invert, fmt) {
+    const valEl = document.getElementById(`sent-${id}-value`);
+    const labelEl = document.getElementById(`sent-${id}-label`);
+    const barEl = document.getElementById(`sent-${id}-bar`);
+    const srcEl = document.getElementById(`sent-${id}-src`);
+    if (!valEl || !labelEl || !barEl) return;
+
+    const zone = invert ? (1 - data.zone) : data.zone;
+    const pct = Math.round(zone * 100);
+
+    // Format value
+    if (fmt) { valEl.textContent = fmt(data.value); }
+    else if (id === 'ausr' || id === 'vix') { valEl.textContent = data.value.toFixed(1); }
+    else if (id === 'yc') { valEl.textContent = (data.value >= 0 ? '+' : '') + data.value.toFixed(0) + 'bp'; }
+    else { valEl.textContent = data.value; }
+
+    labelEl.textContent = data.label;
+    if (pct > 65)       labelEl.style.color = '#4af626';
+    else if (pct > 40)  labelEl.style.color = '#e8c382';
+    else if (pct > 20)  labelEl.style.color = '#f97316';
+    else                labelEl.style.color = '#e61919';
+
+    barEl.style.width = pct + '%';
+    barEl.style.backgroundPosition = pct + '% center';
+
+    if (srcEl) srcEl.textContent = data.source;
+  }
+
+  // All 4 indicators are 100% authoritative data sources
+  renderCard('fng',  d.fng,  false);  // alternative.me
+  renderCard('ausr', d.ausr, true);   // XAU ÷ XAG (Finnhub)
+  renderCard('yc',   d.yc,   true);   // ^TNX - ^IRX (Finnhub)
+}
+
+function updateConnectionStatus() {
+  const dot = document.querySelector('#header-status-dot');
+  const label = document.querySelector('#header-status-label');
+  if (!dot || !label) return;
+  if (engine.isConnected()) {
+    dot.className = 'w-2 h-2 rounded-full bg-[#4af626] animate-pulse';
+    label.textContent = 'LIVE API';
+    label.className = 'font-mono text-xs tracking-wider text-[#4af626]';
+  } else {
+    dot.className = 'w-2 h-2 rounded-full bg-[#e8c382]';
+    label.textContent = 'SIM';
+    label.className = 'font-mono text-xs tracking-wider text-[#e8c382]';
+  }
+}
+
+// Indices chart removed — TradingView handles resize internally
+</script>
+
+<!-- ========== AI RESEARCH REPORT GENERATOR ========== -->
+<script>
+const DEEPSEEK_KEY = (window.API_KEYS && window.API_KEYS.DEEPSEEK) || '';
+
+// ═══════════════════════════════════════════
+// MULTI-AGENT RESEARCH PIPELINE
+// Search(1) + Analysis(6) + Review(2) + Editor(1) = 10 agents
+// ═══════════════════════════════════════════
+
+async function callLLM(systemPrompt, userMessage, temp = 0.3) {
+  const res = await fetch('https://api.deepseek.com/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${DEEPSEEK_KEY}` },
+    body: JSON.stringify({ model: 'deepseek-chat', temperature: temp, max_tokens: 2048,
+      messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userMessage }] }),
+  });
+  if (!res.ok) throw new Error(`DeepSeek ${res.status}: ${(await res.text()).slice(0, 150)}`);
+  return (await res.json()).choices[0].message.content;
+}
+
+function updateProgress(stage, detail) {
+  const p = document.getElementById('report-status');
+  const c = document.getElementById('report-content');
+  const stages = { search:'🔍 搜索中', analysis:'🧠 分析中', review:'🔎 审核中', editor:'📝 主编汇总中', done:'✅' };
+  if (p) p.textContent = `${stages[stage] || ''} ${detail}`;
+  if (c && stage !== 'done') {
+    c.innerHTML = `<div class="space-y-3 py-8"><div class="animate-pulse text-[#e8c382] font-mono text-sm">${stages[stage] || stage} — ${detail}</div>
+      <div class="h-1 bg-gray-800 rounded-full overflow-hidden"><div class="h-full bg-[#e8c382] rounded-full transition-all duration-700" id="progress-bar" style="width:0%"></div></div></div>`;
+  }
+}
+
+// ── STAGE 1: SEARCH TEAM ──
+async function runSearchAgent(snapshot) {
+  const prompt = `你是金融信息搜索员。基于以下市场数据快照，搜索并列出今日最重要的 5-8 条市场驱动因素。
+
+${snapshot}
+
+要求：
+- 每条列出：可能的驱动事件、影响的资产、方向（利多/利空）
+- 如果某条是推测，标注"[推测]"
+- 聚焦宏观和跨资产事件，不要个股信息
+- 输出简洁的列表格式，每条不超过两行`;
+
+  return callLLM(SEARCH_SYSTEM, prompt, 0.2);
+}
+
+// ── STAGE 2: ANALYSIS TEAM (6 agents, parallel) ──
+const ANALYSTS = {
+  macro: {
+    name: '宏观策略师',
+    icon: '🌐',
+    system: `你是资深宏观策略师，专注于利率、汇率和全球资金流向分析。你的分析框架基于：收益率曲线形态、美元周期、央行政策预期、跨境资本流动。输出格式：## 宏观研判\n[2-3段分析]\n**关键结论**: [1句话]`,
+    data: s => `利率: US10Y ${s.us10y}% | US3M ${s.us3m}% | 利差 ${s.spread}bp\n外汇: DXY ${s.dxy} | EUR/USD ${s.eurusd}\n情绪: 利差状态: ${s.spread < 0 ? '倒挂⚠️' : '正常'}`,
+  },
+  energy: {
+    name: '能源分析师',
+    icon: '🛢️',
+    system: `你是能源市场分析师，专注于原油供需、地缘政治风险和库存周期。分析框架：WTI-Brent价差、OPEC+动态、EIA库存趋势、炼厂利润。输出格式：## 能源分析\n[WTI/Brent价差+技术位置]\n[供需因素]\n**关键结论**: [1句话]`,
+    data: s => `WTI: $${s.wti}/bbl | Brent: $${s.brent}/bbl | 价差: $${(s.brent - s.wti).toFixed(2)}\nWTI 涨跌: ${s.wtiChg}`,
+  },
+  metals: {
+    name: '贵金属策略师',
+    icon: '🥇',
+    system: `你是贵金属策略师，专注于黄金、白银、铂金、钯金。分析框架：实际利率与金价关系、央行购金趋势、工业需求（银/铂/钯）、金银比信号。输出格式：## 贵金属分析\n[金价驱动]\n[金银比+工业金属]\n**关键结论**: [1句话]`,
+    data: s => `黄金: $${s.gold}/oz | 白银: $${s.silver}/oz | 铂: $${s.plat} | 钯: $${s.pall}\n金银比: ${s.ausr.toFixed(1)} (${s.ausrLabel})\n各品种涨跌: Au ${s.goldChg} | Ag ${s.silverChg}`,
+  },
+  quant: {
+    name: '量化技术员',
+    icon: '📈',
+    system: `你是量化技术分析师，专注价格行为和技术指标。从提供的数据推导：趋势方向、支撑阻力位、波动率特征。不要编造未提供的数据。输出格式：## 技术面\n| 品种 | 趋势 | 支撑 | 阻力 |\n|------|------|------|------|\n[填4-5行]\n**关键结论**: [1句话]`,
+    data: s => `WTI: $${s.wti} (${s.wtiChg})\n黄金: $${s.gold} (${s.goldChg})\n白银: $${s.silver} (${s.silverChg})\nDXY: ${s.dxy} (${s.dxyChg})\nBTC: $${s.btc} (${s.btcChg})\n(请从价格水平和近期变化推导技术位，标注[推导]表示非精确计算)`,
+  },
+  sentiment: {
+    name: '情绪分析师',
+    icon: '🎭',
+    system: `你是市场情绪分析师。解读恐惧贪婪指数、金银比、收益率曲线形态等情绪指标。判断当前市场处于：极度恐惧/恐惧/中性/贪婪/极度贪婪。输出格式：## 情绪解读\n[各指标读数+解读]\n[情绪综合判断]\n**关键结论**: [1句话]`,
+    data: s => `Fear & Greed: ${s.fng} (${s.fngLabel})\n金银比: ${s.ausr.toFixed(1)} (${s.ausrLabel})\n10Y-3M利差: ${s.spread}bp (${s.spreadLabel})\n综合判断: 恐惧>贪婪? 避险>风险偏好?`,
+  },
+  intel: {
+    name: '情报分析师',
+    icon: '🔎',
+    system: `你是市场情报分析师，负责将碎片化信息整合成可操作的情报。基于搜索团队发现的驱动因素，提炼今日最重要的 3 个市场主题，每个主题说明：影响范围、持续性（短期/中期/长期）、对资产配置的启示。输出格式：## 情报整合\n### 主题1: [标题]\n[分析]\n### 主题2: [标题]\n[分析]\n### 主题3: [标题]\n[分析]`,
+    data: (s, searchResults) => `搜索团队发现:\n${searchResults}\n\n市场数据:\n${s.macro}\n请整合信息提炼3个核心主题。`,
+  },
+};
+
+// ── STAGE 3: REVIEW TEAM (2 agents, parallel) ──
+const REVIEWERS = {
+  factcheck: {
+    name: '事实核查员',
+    icon: '🔬',
+    system: `你是事实核查员。对照提供的原始市场数据，逐条检查分析师报告中的数字是否准确。发现任何数据不一致立即指出。不要评价分析质量，只核对事实。输出格式：## 事实核查\n- ✅ 通过: [条数]\n- ⚠️ 存疑: [列出]\n- ❌ 错误: [列出并纠正]`,
+  },
+  consistency: {
+    name: '一致性审核',
+    icon: '⚖️',
+    system: `你是一致性审核员。检查不同分析师之间的观点是否存在矛盾（例如：宏观策略师看涨美元但贵金属策略师认为金价将因美元走弱而上涨）。列出矛盾点并建议如何协调。输出格式：## 一致性审核\n[矛盾点列表，若无则写"各分析师观点基本一致"]`,
+  },
+};
+
+// ── STAGE 4: EDITOR-IN-CHIEF ──
+const EDITOR_SYSTEM = `你是研究主编。将以下分析师报告和审核意见整合成一份专业市场日报。
+
+## 输出结构
+## 📊 市场总览
+[3-4句话总结，覆盖核心矛盾]
+
+## 🔥 今日核心主题
+[3个主题，每个2-3句]
+
+## 🛢️ 能源
+[整合能源分析师结论]
+
+## 🥇 贵金属
+[整合贵金属策略师结论]
+
+## 📈 技术面
+[整合量化技术员结论，保留表格]
+
+## ⚠️ 风险信号
+[整合情绪分析师+审核意见]
+
+## 🎯 展望
+[整合宏观策略师+情报分析师，给出未来1-2周各资产方向判断及置信度]
+
+## 规则
+- 保留各分析师的核心判断，删去冗余
+- 审核发现的数据错误必须修正
+- 中文撰写，专业术语保留英文缩写
+- 不确定处标注"[需更多数据]"
+- 不要给出买卖建议`;
+
+// ── PIPELINE ORCHESTRATOR ──
+async function generateResearchReport() {
+  const btn = document.getElementById('btn-generate-report');
+  const btnText = document.getElementById('btn-report-text');
+  const container = document.getElementById('report-container');
+  const content = document.getElementById('report-content');
+  const title = document.getElementById('report-title');
+  const ts = document.getElementById('report-timestamp');
+  const status = document.getElementById('report-status');
+
+  btn.disabled = true; container.classList.remove('hidden');
+  const startTime = Date.now();
+
+  try {
+    // ── Build data snapshot ──
+    updateProgress('search', '采集市场数据...');
+    const s = {
+      us10y: engine.getPrice('US10Y').toFixed(2), us3m: engine.getPrice('US3M').toFixed(2),
+      spread: ((engine.getPrice('US10Y') - engine.getPrice('US3M')) * 100).toFixed(0),
+      dxy: engine.getPrice('DXY').toFixed(2), eurusd: engine.getPrice('EURUSD').toFixed(4),
+      gold: engine.getPrice('GOLD').toFixed(2), silver: engine.getPrice('SILVER').toFixed(2),
+      plat: engine.getPrice('PLAT').toFixed(2), pall: engine.getPrice('PALL').toFixed(2),
+      wti: engine.getPrice('WTI').toFixed(2), brent: engine.getPrice('BRENT').toFixed(2),
+      btc: Math.round(engine.getPrice('BTC')).toLocaleString('zh-CN'),
+      goldChg: engine.getChangePercent('GOLD').toFixed(2) + '%',
+      silverChg: engine.getChangePercent('SILVER').toFixed(2) + '%',
+      wtiChg: engine.getChangePercent('WTI').toFixed(2) + '%',
+      btcChg: engine.getChangePercent('BTC').toFixed(2) + '%',
+      dxyChg: engine.getChangePercent('DXY').toFixed(2) + '%',
+    };
+    const sent = sentiment.getData();
+    s.fng = sent.fng.value; s.fngLabel = sent.fng.label;
+    s.ausr = sent.ausr.value; s.ausrLabel = sent.ausr.label;
+    s.spreadLabel = sent.yc.label;
+    const snapshot = buildMarketSnapshot();
+
+    // ── STAGE 1: Search ──
+    updateProgress('search', '搜索市场驱动因素...');
+    const searchResults = await runSearchAgent(snapshot);
+    updateProgress('search', '搜索完成 ✓');
+    document.getElementById('progress-bar').style.width = '10%';
+
+    // ── STAGE 2: Analysis (6 agents parallel) ──
+    updateProgress('analysis', '6位分析师并行工作...');
+    const analysisKeys = ['macro','energy','metals','quant','sentiment'];
+    const analysisPromises = analysisKeys.map(key => {
+      const a = ANALYSTS[key];
+      const data = key === 'intel' ? a.data(s, searchResults) : a.data(s);
+      return callLLM(a.system, data, 0.3).then(r => ({ key, name: a.name, icon: a.icon, report: r }));
+    });
+    // Intel runs after search
+    const intelPromise = callLLM(ANALYSTS.intel.system, ANALYSTS.intel.data(s, searchResults), 0.3)
+      .then(r => ({ key: 'intel', name: ANALYSTS.intel.name, icon: ANALYSTS.intel.icon, report: r }));
+
+    const analysisResults = await Promise.all([...analysisPromises, intelPromise]);
+    updateProgress('analysis', '6/6 分析师完成 ✓');
+    document.getElementById('progress-bar').style.width = '40%';
+
+    // ── STAGE 3: Review (2 agents parallel) ──
+    updateProgress('review', '审核团队核查中...');
+    const allReports = analysisResults.map(a => `### ${a.icon} ${a.name}\n${a.report}`).join('\n\n---\n\n');
+    const reviewData = `原始市场数据:\n${buildMarketSnapshot()}\n\n分析师报告:\n${allReports}`;
+
+    const reviewPromises = Object.entries(REVIEWERS).map(([key, r]) =>
+      callLLM(r.system, reviewData, 0.2).then(report => ({ key, name: r.name, icon: r.icon, report }))
+    );
+    const reviewResults = await Promise.all(reviewPromises);
+    updateProgress('review', '审核完成 ✓');
+    document.getElementById('progress-bar').style.width = '60%';
+
+    // ── STAGE 4: Editor ──
+    updateProgress('editor', '主编撰写最终报告...');
+    const editorInput = `分析师报告:\n${allReports}\n\n审核意见:\n${reviewResults.map(r => `### ${r.icon} ${r.name}\n${r.report}`).join('\n\n')}\n\n请整合为最终市场日报。`;
+    const finalReport = await callLLM(EDITOR_SYSTEM, editorInput, 0.35);
+    updateProgress('done', '');
+    document.getElementById('progress-bar').style.width = '100%';
+
+    // ── Parse predictions & store ──
+    const predictions = parsePredictions(finalReport);
+    storePrediction(predictions);
+    updatePredictionTracker();
+
+    // ── Render ──
+    const now = new Date();
+    title.textContent = '市场日报 · 多 agent 研报';
+    ts.textContent = now.toLocaleString('zh-CN', { hour12: false, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+
+    const elapsed = ((Date.now() - startTime) / 1000).toFixed(0);
+    const agentList = analysisResults.map(a => `${a.icon} ${a.name}`).join(' · ');
+    const reviewList = reviewResults.map(r => `${r.icon} ${r.name}`).join(' · ');
+
+    content.innerHTML = `
+      <div class="mb-6 p-4 rounded-sm bg-white/[0.02] border border-white/5">
+        <div class="flex flex-wrap gap-3 text-[0.55rem] font-mono tracking-wider">
+          <span class="text-gray-500">分析团队:</span>
+          <span class="text-[#e8c382]">${agentList}</span>
+        </div>
+        <div class="flex flex-wrap gap-3 text-[0.55rem] font-mono tracking-wider mt-1">
+          <span class="text-gray-500">审核团队:</span>
+          <span class="text-white">${reviewList}</span>
+        </div>
+        <div class="flex flex-wrap gap-3 text-[0.55rem] font-mono tracking-wider mt-1">
+          <span class="text-gray-500">主编:</span>
+          <span class="text-[#4af626]">📋 Editor-in-Chief</span>
+          <span class="text-gray-600 ml-auto">⏱ ${elapsed}s</span>
+        </div>
+      </div>
+      <div class="prose prose-invert max-w-none font-manrope text-sm leading-relaxed text-gray-300
+        [&_h2]:font-gloock [&_h2]:text-xl [&_h2]:text-[#e8c382] [&_h2]:mt-8 [&_h2]:mb-3 [&_h2]:border-b [&_h2]:border-white/10 [&_h2]:pb-2
+        [&_h3]:font-bebas [&_h3]:text-lg [&_h3]:text-white [&_h3]:mt-6 [&_h3]:mb-2 [&_h3]:tracking-wider
+        [&_strong]:text-white [&_strong]:font-semibold
+        [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1 [&_li]:text-gray-400
+        [&_table]:w-full [&_table]:text-xs [&_table]:font-mono [&_table]:mb-4
+        [&_th]:text-left [&_th]:text-[#e8c382] [&_th]:py-2 [&_th]:border-b [&_th]:border-white/10 [&_th]:pr-4
+        [&_td]:py-2 [&_td]:border-b [&_td]:border-white/5 [&_td]:pr-4
+        [&_code]:font-mono [&_code]:text-xs [&_code]:bg-white/5 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded-sm
+        [&_hr]:border-white/10">${renderMarkdown(finalReport)}</div>`;
+
+    status.textContent = `✅ 10-agent 研报完成 — ${now.toLocaleTimeString('zh-CN', {hour12:false})} (耗时 ${elapsed}s)`;
+    btnText.textContent = '⚡ 重新生成';
+
+  } catch (e) {
+    content.innerHTML = `<div class="text-[#e61919] font-mono text-sm py-8">❌ 生成失败: ${escapeHtml(e.message)}<br><br>请重试。</div>`;
+    status.textContent = `❌ 失败 — ${new Date().toLocaleTimeString('zh-CN', {hour12:false})}`;
+    btnText.textContent = '🔄 重试';
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+const SEARCH_SYSTEM = `你是金融信息搜索分析师。你的任务是根据市场数据推断可能的驱动事件。只列出高置信度的推断，推测项必须标注。`;
+
+// ═══════════════════════════════════════════
+// PREDICTION TRACKER — parse, store, compare
+// ═══════════════════════════════════════════
+function parsePredictions(reportText) {
+  const predictions = {};
+
+  // Parse WTI prediction
+  const wtiSection = reportText.match(/WTI[^]*?(?=\n##|\n#|$)/i);
+  if (wtiSection) {
+    const text = wtiSection[0];
+    // Direction
+    if (/看涨|上涨|偏多|bullish|走高/i.test(text)) predictions.WTI_dir = '📈 看涨';
+    else if (/看跌|下跌|偏空|bearish|走低|回落/i.test(text)) predictions.WTI_dir = '📉 看跌';
+    else predictions.WTI_dir = '↔️ 震荡';
+    // Price range: match patterns like "75-82" or "75~82" or "75至82" or "75到82"
+    const rangeMatch = text.match(/(\d{2,3})\s*[-~至到]\s*(\d{2,3})/);
+    if (rangeMatch) predictions.WTI_low = parseFloat(rangeMatch[1]);
+    if (rangeMatch) predictions.WTI_high = parseFloat(rangeMatch[2]);
+    // Single target: "有望挑战XX" or "目标XX"
+    const targetMatch = text.match(/(?:挑战|目标|看向|有望)(\d{2,3})/);
+    if (targetMatch && !rangeMatch) {
+      const t = parseFloat(targetMatch[1]);
+      predictions.WTI_low = t * 0.95;
+      predictions.WTI_high = t * 1.05;
+    }
+  }
+
+  // Parse Gold prediction
+  const goldSection = reportText.match(/(?:黄金|XAU|Gold)[^]*?(?=\n##|\n#|$)/i);
+  if (goldSection) {
+    const text = goldSection[0];
+    if (/看涨|上涨|偏多|bullish|走高|挑战/i.test(text)) predictions.GOLD_dir = '📈 看涨';
+    else if (/看跌|下跌|偏空|bearish|走低|回落/i.test(text)) predictions.GOLD_dir = '📉 看跌';
+    else predictions.GOLD_dir = '↔️ 震荡';
+    const rangeMatch = text.match(/(\d{3,4})\s*[-~至到]\s*(\d{3,4})/);
+    if (rangeMatch) predictions.GOLD_low = parseFloat(rangeMatch[1]);
+    if (rangeMatch) predictions.GOLD_high = parseFloat(rangeMatch[2]);
+    const targetMatch = text.match(/(?:挑战|目标|看向|有望)(\d{3,4})/);
+    if (targetMatch && !rangeMatch) {
+      const t = parseFloat(targetMatch[1]);
+      predictions.GOLD_low = t * 0.97;
+      predictions.GOLD_high = t * 1.03;
+    }
+  }
+
+  return predictions;
+}
+
+function storePrediction(predictions) {
+  const record = {
+    time: Date.now(),
+    timeStr: new Date().toLocaleString('zh-CN', { hour12: false }),
+    WTI_price: engine.getPrice('WTI'),
+    GOLD_price: engine.getPrice('GOLD'),
+    WTI_dir: predictions.WTI_dir || '--',
+    WTI_low: predictions.WTI_low || null,
+    WTI_high: predictions.WTI_high || null,
+    GOLD_dir: predictions.GOLD_dir || '--',
+    GOLD_low: predictions.GOLD_low || null,
+    GOLD_high: predictions.GOLD_high || null,
+  };
+  // Keep last 10 prediction records
+  let history = [];
+  try { history = JSON.parse(localStorage.getItem('predictions') || '[]'); } catch {}
+  history.push(record);
+  if (history.length > 10) history = history.slice(-10);
+  localStorage.setItem('predictions', JSON.stringify(history));
+  return record;
+}
+
+function updatePredictionTracker() {
+  const tracker = document.getElementById('prediction-tracker');
+  let history = [];
+  try { history = JSON.parse(localStorage.getItem('predictions') || '[]'); } catch {}
+  if (history.length === 0) { if (tracker) tracker.classList.add('hidden'); return; }
+  if (tracker) tracker.classList.remove('hidden');
+
+  const last = history[history.length - 1];
+  const nowWTI = engine.getPrice('WTI');
+  const nowGold = engine.getPrice('GOLD');
+
+  // Age
+  const ageMin = Math.round((Date.now() - last.time) / 60000);
+  document.getElementById('prediction-age').textContent = ageMin < 60 ? `${ageMin}min 前` : `${Math.round(ageMin/60)}h 前`;
+  document.getElementById('pred-wti-time').textContent = last.timeStr;
+  document.getElementById('pred-gold-time').textContent = last.timeStr;
+
+  // WTI
+  document.getElementById('pred-wti-dir').textContent = last.WTI_dir || '--';
+  document.getElementById('pred-wti-range').textContent = last.WTI_low ? `$${last.WTI_low} - $${last.WTI_high}` : '未指定';
+  document.getElementById('pred-wti-now').textContent = `$${nowWTI.toFixed(2)}`;
+
+  const wtiAcc = calcAccuracy(last.WTI_dir, last.WTI_low, last.WTI_high, last.WTI_price, nowWTI);
+  document.getElementById('pred-wti-bar').style.width = wtiAcc + '%';
+  document.getElementById('pred-wti-bar').style.background = wtiAcc > 60 ? '#4af626' : wtiAcc > 30 ? '#e8c382' : '#e61919';
+  document.getElementById('pred-wti-acc').textContent = wtiAcc + '%';
+  document.getElementById('pred-wti-acc').style.color = wtiAcc > 60 ? '#4af626' : wtiAcc > 30 ? '#e8c382' : '#e61919';
+
+  // Gold
+  document.getElementById('pred-gold-dir').textContent = last.GOLD_dir || '--';
+  document.getElementById('pred-gold-range').textContent = last.GOLD_low ? `$${last.GOLD_low} - $${last.GOLD_high}` : '未指定';
+  document.getElementById('pred-gold-now').textContent = `$${nowGold.toFixed(2)}`;
+
+  const goldAcc = calcAccuracy(last.GOLD_dir, last.GOLD_low, last.GOLD_high, last.GOLD_price, nowGold);
+  document.getElementById('pred-gold-bar').style.width = goldAcc + '%';
+  document.getElementById('pred-gold-bar').style.background = goldAcc > 60 ? '#4af626' : goldAcc > 30 ? '#e8c382' : '#e61919';
+  document.getElementById('pred-gold-acc').textContent = goldAcc + '%';
+  document.getElementById('pred-gold-acc').style.color = goldAcc > 60 ? '#4af626' : goldAcc > 30 ? '#e8c382' : '#e61919';
+}
+
+function calcAccuracy(dirPred, lowPred, highPred, priceAtPred, priceNow) {
+  let score = 0;
+  // Direction accuracy (50%)
+  const actualUp = priceNow > priceAtPred;
+  const predUp = dirPred && (dirPred.includes('看涨') || dirPred.includes('📈'));
+  const predDown = dirPred && (dirPred.includes('看跌') || dirPred.includes('📉'));
+  const predNeutral = dirPred && dirPred.includes('震荡');
+  if ((actualUp && predUp) || (!actualUp && predDown)) score += 50;
+  else if (predNeutral) score += 25; // neutral = half credit
+  // Range accuracy (50%) — is current price within predicted range?
+  if (lowPred && highPred && priceNow >= lowPred && priceNow <= highPred) score += 50;
+  else if (lowPred && highPred) {
+    const range = highPred - lowPred;
+    const dist = Math.min(Math.abs(priceNow - lowPred), Math.abs(priceNow - highPred));
+    if (dist < range * 0.2) score += 30; // close to range
+    else if (dist < range * 0.5) score += 10; // somewhat near
+  }
+  return score;
+}
+
+// Update tracker periodically
+setInterval(updatePredictionTracker, 10000);
+
+// ═══════════════════════════════════════════
+// AUTO-LOAD latest bot report on page load
+// ═══════════════════════════════════════════
+(async function loadLatestReport() {
+  try {
+    const res = await fetch('report.json');
+    if (!res.ok) return;
+    const report = await res.json();
+    const container = document.getElementById('report-container');
+    const title = document.getElementById('report-title');
+    const ts = document.getElementById('report-timestamp');
+    const content = document.getElementById('report-content');
+    const status = document.getElementById('report-status');
+    if (!container || !content) return;
+
+    container.classList.remove('hidden');
+    const date = new Date(report.timestamp);
+    title.textContent = report.title || '市场日报';
+    ts.textContent = date.toLocaleString('zh-CN', { hour12: false, year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' });
+
+    const agentList = (report.agents || []).map(a => `${a.icon} ${a.name}`).join(' · ');
+    const reviewList = (report.reviewers || []).map(r => `${r.icon} ${r.name}`).join(' · ');
+    content.innerHTML = `
+      <div class="mb-6 p-4 rounded-sm bg-white/[0.02] border border-white/5">
+        <div class="flex flex-wrap gap-3 text-[0.55rem] font-mono tracking-wider">
+          <span class="text-gray-500">🤖 自动生成 · 分析团队:</span>
+          <span class="text-[#e8c382]">${agentList}</span>
+        </div>
+        <div class="flex flex-wrap gap-3 text-[0.55rem] font-mono tracking-wider mt-1">
+          <span class="text-gray-500">审核团队:</span>
+          <span class="text-white">${reviewList}</span>
+        </div>
+        <div class="flex flex-wrap gap-3 text-[0.55rem] font-mono tracking-wider mt-1">
+          <span class="text-gray-600 ml-auto">⏱ GitHub Actions · 每日 08:30 自动生成</span>
+        </div>
+      </div>
+      <div class="prose prose-invert max-w-none font-manrope text-sm leading-relaxed text-gray-300
+        [&_h2]:font-gloock [&_h2]:text-xl [&_h2]:text-[#e8c382] [&_h2]:mt-8 [&_h2]:mb-3 [&_h2]:border-b [&_h2]:border-white/10 [&_h2]:pb-2
+        [&_h3]:font-bebas [&_h3]:text-lg [&_h3]:text-white [&_h3]:mt-6 [&_h3]:mb-2 [&_h3]:tracking-wider
+        [&_strong]:text-white [&_strong]:font-semibold
+        [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1 [&_li]:text-gray-400
+        [&_table]:w-full [&_table]:text-xs [&_table]:font-mono [&_table]:mb-4
+        [&_th]:text-left [&_th]:text-[#e8c382] [&_th]:py-2 [&_th]:border-b [&_th]:border-white/10 [&_th]:pr-4
+        [&_td]:py-2 [&_td]:border-b [&_td]:border-white/5 [&_td]:pr-4
+        [&_code]:font-mono [&_code]:text-xs [&_code]:bg-white/5 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded-sm
+        [&_hr]:border-white/10">${renderMarkdown(report.content || '')}</div>`;
+    if (status) status.textContent = `🤖 自动研报 · ${date.toLocaleString('zh-CN', {hour12:false})} · 每日 08:30 更新`;
+  } catch (e) { /* no report yet, that's fine */ }
+})();
+
+function buildMarketSnapshot() {
+  const symbols = ['US10Y','US3M','DXY','EURUSD','GOLD','SILVER','PLAT','PALL','WTI','BRENT','BTC','COPPER'];
+  let out = '## 实时市场数据快照\n\n';
+  out += `时间: ${new Date().toLocaleString('zh-CN', {hour12:false})}\n\n`;
+
+  // Group by category
+  const groups = {
+    '利率 & 利差': ['US10Y','US3M'],
+    '外汇': ['DXY','EURUSD'],
+    '贵金属': ['GOLD','SILVER','PLAT','PALL'],
+    '能源 & 商品': ['WTI','BRENT','COPPER'],
+    '加密货币': ['BTC'],
+  };
+  out += '### 全球指数\n';
+  out += '> 指数数据由 TradingView 实时提供，详见仪表板 [全球指数] 板块。\n\n';
+
+  for (const [group, syms] of Object.entries(groups)) {
+    out += `### ${group}\n`;
+    let total = 0, count = 0;
+    for (const s of syms) {
+      const price = engine.getPrice(s);
+      const ch = engine.getChange(s);
+      const chp = engine.getChangePercent(s);
+      if (!isFinite(price) || price <= 0) continue;
+      const dir = ch >= 0 ? '📈' : '📉';
+      const cfg = SYMBOL_MAP[s] || {};
+      out += `- ${dir} **${cfg.name || s}**: ${price.toFixed(engine.getDigits(s))} (${ch >= 0 ? '+' : ''}${chp.toFixed(2)}%)\n`;
+      total += chp; count++;
+    }
+    if (count > 0) {
+      const avg = total / count;
+      const mood = avg > 0.5 ? '↑ 偏强' : avg < -0.5 ? '↓ 偏弱' : '→ 震荡';
+      out += `  → 板块均值: ${avg >= 0 ? '+' : ''}${avg.toFixed(2)}% ${mood}\n`;
+    }
+    out += '\n';
+  }
+
+  // Sentiment indicators
+  const s = sentiment.getData();
+  out += '### 情绪指标\n';
+  out += `- Crypto Fear & Greed: **${s.fng.value}** (${s.fng.label})\n`;
+  out += `- Gold/Silver Ratio: **${s.ausr.value.toFixed(1)}** (${s.ausr.label})\n`;
+  out += `- 10Y-3M 利差: **${s.yc.value >= 0 ? '+' : ''}${s.yc.value.toFixed(0)}bp** (${s.yc.label})\n`;
+  out += `- VIX: 由 TradingView 实时提供\n`;
+  out += '\n';
+
+  // Yield curve context
+  const spread = (engine.getPrice('US10Y') - engine.getPrice('US3M')) * 100;
+  out += `### 收益曲线\n`;
+  out += `- 10Y: ${engine.getPrice('US10Y').toFixed(2)}% | 3M: ${engine.getPrice('US3M').toFixed(2)}% | 利差: ${spread >= 0 ? '+' : ''}${spread.toFixed(0)}bp\n`;
+  out += `- 状态: ${spread < 0 ? '⚠️ 倒挂 — 衰退预警信号' : '✅ 正常 — 未出现倒挂'}\n\n`;
+
+  out += '---\n请基于以上数据进行多维度分析，输出结构化的市场研报。';
+  return out;
+}
+
+function renderMarkdown(md) {
+  // Simple markdown → HTML renderer
+  let html = md;
+  // Headers
+  html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+  html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+  // Bold
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  // Inline code
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+  // Lists
+  html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
+  html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
+  // Horizontal rules
+  html = html.replace(/^---$/gm, '<hr class="border-white/10 my-4">');
+  // Arrows color
+  html = html.replace(/📈/g, '<span class="up">📈</span>');
+  html = html.replace(/📉/g, '<span class="down">📉</span>');
+  // Paragraphs (double newline → paragraph break)
+  html = html.replace(/\n\n/g, '</p><p>');
+  html = '<p>' + html + '</p>';
+  // Clean up empty paragraphs
+  html = html.replace(/<p>\s*<\/p>/g, '');
+  html = html.replace(/<p>\s*<h/g, '<h');
+  html = html.replace(/<\/h([23])>\s*<\/p>/g, '</h$1>');
+  html = html.replace(/<p>\s*<ul>/g, '<ul>');
+  html = html.replace(/<\/ul>\s*<\/p>/g, '</ul>');
+  html = html.replace(/<p>\s*<hr/g, '<hr');
+  html = html.replace(/<\/hr>\s*<\/p>/g, '</hr>');
+  return html;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+</script>
+
+<!-- ========== GSAP ANIMATIONS ========== -->
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+// Word reveal animations — GSAP fromTo controls BOTH initial and final state
+// Small blur (3px) avoids browser downscaling artifacts on large text
+function revealWords() {
+  gsap.utils.toArray('.reveal-word span').forEach((el, i) => {
+    gsap.fromTo(el,
+      { y: '100%', filter: 'blur(3px)' },
+      {
+        y: '0%',
+        filter: 'blur(0px)',
+        duration: 1.2,
+        delay: i * 0.08,
+        ease: 'power4.out',
+        scrollTrigger: {
+          trigger: el.closest('section') || el,
+          start: 'top 80%',
+          once: true,
+        }
+      }
+    );
+  });
+}
+
+// Frame section entry animations
+function frameEntryAnimations() {
+  document.querySelectorAll('.frame-section-entry').forEach(el => {
+    gsap.fromTo(el, {
+      y: 28,
+      opacity: 0,
+    }, {
+      y: 0,
+      opacity: 1,
+      duration: 1,
+      ease: 'power3.out',
+      scrollTrigger: {
+        trigger: el,
+        start: 'top 90%',
+        once: true,
+      }
+    });
+  });
+
+  // Also animate frame-section elements that are cards
+  document.querySelectorAll('.data-card').forEach((el, i) => {
+    gsap.fromTo(el, {
+      y: 28,
+      opacity: 0,
+    }, {
+      y: 0,
+      opacity: 1,
+      duration: 0.8,
+      delay: i * 0.08,
+      ease: 'power3.out',
+      scrollTrigger: {
+        trigger: el.closest('.grid') || el,
+        start: 'top 85%',
+        once: true,
+      }
+    });
+  });
+}
+
+revealWords();
+frameEntryAnimations();
+
+// Parallax on any images (if added later)
+document.querySelectorAll('.parallax-img').forEach(img => {
+  gsap.fromTo(img, { y: '-15%' }, {
+    y: '15%',
+    ease: 'none',
+    scrollTrigger: {
+      trigger: img.parentElement,
+      start: 'top bottom',
+      end: 'bottom top',
+      scrub: true,
+    }
+  });
+});
+</script>
+
+<!-- ========== LENIS SMOOTH SCROLL ========== -->
+<script>
+const lenis = new Lenis({
+  duration: 1.2,
+  easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+  orientation: 'vertical',
+  smoothWheel: true,
+});
+
+function raf(time) {
+  lenis.raf(time);
+  requestAnimationFrame(raf);
+}
+requestAnimationFrame(raf);
+
+// Anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = document.querySelector(anchor.getAttribute('href'));
+    if (target) lenis.scrollTo(target, { offset: -80 });
+  });
+});
+</script>
+
+</body>
+</html>
