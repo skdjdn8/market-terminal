@@ -17,17 +17,19 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: '22' }
+      - name: Pull latest
+        run: git pull --rebase origin main
       - name: Fetch market data
         env:
           FINNHUB_KEY: ${{ secrets.FINNHUB_KEY }}
         run: node fetch-and-report.js
-      - name: Commit data
+      - name: Commit and push
         run: |
           git config user.name "market-bot"
           git config user.email "bot@market.terminal"
-          git pull --rebase origin main
           git add data.json
-          git diff --staged --quiet || git commit -m "data: auto-update $(date -u +%Y-%m-%dT%H:%MZ)"
+          git diff --staged --quiet || git commit -m "data: $(date -u +%Y-%m-%dT%H:%MZ)"
+          git pull --rebase origin main
           git push
 
   daily-report:
@@ -38,16 +40,18 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: '22' }
+      - name: Pull latest (includes fetch-data commit)
+        run: git pull --rebase origin main
       - name: Run research pipeline
         env:
           FINNHUB_KEY: ${{ secrets.FINNHUB_KEY }}
           DEEPSEEK_KEY: ${{ secrets.DEEPSEEK_KEY }}
         run: node fetch-and-report.js --report
-      - name: Commit report
+      - name: Commit and push
         run: |
           git config user.name "market-bot"
           git config user.email "bot@market.terminal"
-          git pull --rebase origin main
           git add data.json report.md report.json
-          git diff --staged --quiet || git commit -m "report: daily research $(date -u +%Y-%m-%d)"
+          git diff --staged --quiet || git commit -m "report: $(date -u +%Y-%m-%d)"
+          git pull --rebase origin main
           git push
