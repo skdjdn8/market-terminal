@@ -282,7 +282,7 @@ body {
       <a href="#sentiment" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382] transition-colors duration-300">// 情绪</a>
       <a href="#commodities" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382] transition-colors duration-300">// 大宗</a>
       <a href="#metals" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382] transition-colors duration-300">// 贵金属</a>
-      <a href="#indices" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382] transition-colors duration-300">// 指数</a>
+      <a href="#notes" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382] transition-colors duration-300">// 随笔</a>
       <a href="#research" class="font-mono text-xs tracking-widest text-[#e8c382] hover:text-white transition-colors duration-300">// 研报</a>
     </nav>
 
@@ -668,79 +668,46 @@ body {
 </section>
 
 <!-- ================================================================ -->
-<!-- SECTION 4: GLOBAL INDICES — TRADINGVIEW REAL-TIME -->
+<!-- SECTION 4: NOTES / PORTFOLIO -->
 <!-- ================================================================ -->
-<section id="indices" class="relative py-24">
+<section id="notes" class="relative py-24">
   <div class="max-w-7xl mx-auto px-6">
     <div class="mb-10 frame-section-entry">
-      <div class="font-mono text-[0.65rem] tracking-[0.2em] text-[#e8c382] mb-4">// SECTION_04 · TRADINGVIEW</div>
-      <h2 class="font-gloock text-5xl md:text-7xl leading-[0.95] text-white" id="indices-heading">
-        <div class="reveal-word"><span>全球指数</span></div><br>
-        <div class="reveal-word"><span class="text-gradient-gold">GLOBAL</span></div>
-        <div class="reveal-word"><span> INDICES</span></div>
+      <div class="font-mono text-[0.65rem] tracking-[0.2em] text-[#e8c382] mb-4">// SECTION_04 · NOTES</div>
+      <h2 class="font-gloock text-5xl md:text-7xl leading-[0.95] text-white" id="notes-heading">
+        <div class="reveal-word"><span>随笔作品集</span></div><br>
+        <div class="reveal-word"><span class="text-gradient-gold">NOTES</span></div>
       </h2>
-      <p class="font-manrope text-sm text-gray-500 mt-3 max-w-lg">TradingView 实时数据 — 全球主要股指报价与日内走势</p>
+      <p class="font-manrope text-sm text-gray-500 mt-3 max-w-lg">个人市场观察随笔、研究报告、交易笔记 — 记录思考，追踪判断</p>
     </div>
 
-    <!-- TradingView Market Overview Widget — all indices in one real-time grid -->
-    <div class="frame-section rounded-sm overflow-hidden scanline-subtle p-4 mb-8">
-      <div class="tradingview-widget-container" style="height:520px">
-        <div class="tradingview-widget-container__widget"></div>
-        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
-        {
-          "colorTheme": "dark",
-          "dateRange": "1D",
-          "showChart": true,
-          "locale": "zh_CN",
-          "largeChartUrl": "",
-          "isTransparent": true,
-          "showSymbolLogo": false,
-          "showFloatingTooltip": true,
-          "width": "100%",
-          "height": "100%",
-          "plotLineColorGrowing": "rgba(74, 246, 38, 0.7)",
-          "plotLineColorFalling": "rgba(230, 25, 25, 0.7)",
-          "gridLineColor": "rgba(255, 255, 255, 0.05)",
-          "scaleFontColor": "rgba(255, 255, 255, 0.5)",
-          "belowLineFillColorGrowing": "rgba(74, 246, 38, 0.05)",
-          "belowLineFillColorFalling": "rgba(230, 25, 25, 0.05)",
-          "tabs": [
-            {
-              "title": "全球指数",
-              "symbols": [
-                {"s": "SP:SPX", "d": "S&P 500"},
-                {"s": "NASDAQ:NDX", "d": "NASDAQ 100"},
-                {"s": "TVC:VIX", "d": "VIX 恐慌指数"},
-                {"s": "HSI:HSI", "d": "恒生指数"},
-                {"s": "TSE:NI225", "d": "日经225"},
-                {"s": "SSE:000300", "d": "沪深300"}
-              ]
-            },
-            {
-              "title": "外汇",
-              "symbols": [
-                {"s": "FX:EURUSD", "d": "EUR/USD"},
-                {"s": "FX:USDJPY", "d": "USD/JPY"},
-                {"s": "FX:GBPUSD", "d": "GBP/USD"},
-                {"s": "FX:USDCNH", "d": "USD/CNH"},
-                {"s": "TVC:DXY", "d": "美元指数 DXY"},
-                {"s": "FX:AUDUSD", "d": "AUD/USD"}
-              ]
-            }
-          ]
-        }
-        </script>
+    <!-- Controls -->
+    <div class="flex flex-wrap items-center gap-4 mb-8 frame-section-entry">
+      <button id="btn-new-note"
+        class="px-5 py-2.5 rounded-sm font-mono text-xs tracking-widest transition-all duration-300
+               bg-[#e8c382] text-[#070707] hover:bg-[#f0d89c] font-semibold"
+        onclick="openNoteEditor()">
+        ✏️ 新建随笔
+      </button>
+      <span class="font-mono text-[0.55rem] tracking-wider text-gray-600" id="notes-count">0 篇随笔</span>
+    </div>
+
+    <!-- Note Editor (hidden by default) -->
+    <div id="note-editor" class="hidden frame-section rounded-sm p-6 mb-8 scanline-subtle">
+      <input id="note-title-input" type="text" placeholder="标题..."
+        class="w-full bg-transparent border-b border-white/10 pb-3 mb-4 font-gloock text-2xl text-white outline-none placeholder-gray-700">
+      <textarea id="note-content-input" placeholder="正文内容...支持换行，纯文本"
+        class="w-full bg-transparent border-none outline-none font-manrope text-sm text-gray-300 placeholder-gray-700 resize-none"
+        rows="12"></textarea>
+      <div class="flex items-center gap-3 mt-4 pt-4 border-t border-white/10">
+        <button onclick="saveNote()" class="px-4 py-2 rounded-sm bg-[#4af626] text-[#070707] font-mono text-xs tracking-wider font-semibold hover:bg-[#6dff4a] transition-colors">💾 发布</button>
+        <button onclick="closeNoteEditor()" class="px-4 py-2 rounded-sm border border-white/10 font-mono text-xs tracking-wider text-gray-400 hover:text-white transition-colors">取消</button>
+        <span class="font-mono text-[0.5rem] text-gray-600 ml-auto" id="note-editing-id"></span>
       </div>
     </div>
 
-    <!-- Mini overview cards row — individual real-time tickers -->
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-      <div class="frame-section rounded-sm p-3 overflow-hidden" style="height:140px"><div class="tradingview-widget-container" style="height:100%"><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>{"symbol":"SP:SPX","width":"100%","height":"100%","locale":"zh_CN","dateRange":"1D","colorTheme":"dark","isTransparent":true,"autosize":true,"largeChartUrl":""}</script></div></div>
-      <div class="frame-section rounded-sm p-3 overflow-hidden" style="height:140px"><div class="tradingview-widget-container" style="height:100%"><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>{"symbol":"NASDAQ:NDX","width":"100%","height":"100%","locale":"zh_CN","dateRange":"1D","colorTheme":"dark","isTransparent":true,"autosize":true,"largeChartUrl":""}</script></div></div>
-      <div class="frame-section rounded-sm p-3 overflow-hidden" style="height:140px"><div class="tradingview-widget-container" style="height:100%"><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>{"symbol":"TVC:VIX","width":"100%","height":"100%","locale":"zh_CN","dateRange":"1D","colorTheme":"dark","isTransparent":true,"autosize":true,"largeChartUrl":""}</script></div></div>
-      <div class="frame-section rounded-sm p-3 overflow-hidden" style="height:140px"><div class="tradingview-widget-container" style="height:100%"><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>{"symbol":"HSI:HSI","width":"100%","height":"100%","locale":"zh_CN","dateRange":"1D","colorTheme":"dark","isTransparent":true,"autosize":true,"largeChartUrl":""}</script></div></div>
-      <div class="frame-section rounded-sm p-3 overflow-hidden" style="height:140px"><div class="tradingview-widget-container" style="height:100%"><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>{"symbol":"TSE:NI225","width":"100%","height":"100%","locale":"zh_CN","dateRange":"1D","colorTheme":"dark","isTransparent":true,"autosize":true,"largeChartUrl":""}</script></div></div>
-      <div class="frame-section rounded-sm p-3 overflow-hidden" style="height:140px"><div class="tradingview-widget-container" style="height:100%"><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>{"symbol":"SSE:000300","width":"100%","height":"100%","locale":"zh_CN","dateRange":"1D","colorTheme":"dark","isTransparent":true,"autosize":true,"largeChartUrl":""}</script></div></div>
+    <!-- Notes Grid -->
+    <div id="notes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
     </div>
   </div>
 </section>
@@ -1948,6 +1915,98 @@ async function generateResearchReport() {
 }
 
 const SEARCH_SYSTEM = `你是金融信息搜索分析师。你的任务是根据市场数据推断可能的驱动事件。只列出高置信度的推断，推测项必须标注。`;
+
+// ═══════════════════════════════════════════
+// NOTES / PORTFOLIO CMS
+// ═══════════════════════════════════════════
+let editingId = null;
+
+function getNotes() {
+  try { return JSON.parse(localStorage.getItem('userNotes') || '[]'); } catch { return []; }
+}
+function saveNotes(notes) { localStorage.setItem('userNotes', JSON.stringify(notes)); }
+
+function renderNotes() {
+  const grid = document.getElementById('notes-grid');
+  const count = document.getElementById('notes-count');
+  const notes = getNotes();
+  if (count) count.textContent = notes.length + ' 篇随笔';
+  if (!grid) return;
+
+  if (notes.length === 0) {
+    grid.innerHTML = `<div class="col-span-full text-center py-16 text-gray-600 font-mono text-sm">暂无随笔 — 点击「✏️ 新建随笔」开始记录</div>`;
+    return;
+  }
+
+  grid.innerHTML = notes.sort((a, b) => b.time - a.time).map((n, i) => `
+    <div class="data-card frame-section rounded-sm p-5 relative overflow-hidden group">
+      <div class="card-glow"></div>
+      <div class="font-mono text-[0.5rem] tracking-[0.15em] text-gray-600 mb-2">${new Date(n.time).toLocaleString('zh-CN', {hour12:false})}</div>
+      <div class="font-gloock text-xl text-white mb-3 leading-tight">${escapeHtml(n.title || '无标题')}</div>
+      <div class="font-manrope text-sm text-gray-400 leading-relaxed whitespace-pre-wrap line-clamp-6">${escapeHtml(n.content || '')}</div>
+      ${n.content && n.content.length > 300 ? `<div class="font-mono text-[0.55rem] text-gray-600 mt-2">...展开阅读</div>` : ''}
+      <div class="flex gap-2 mt-4 pt-3 border-t border-white/5 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button onclick="editNote('${n.id}')" class="font-mono text-[0.55rem] text-gray-500 hover:text-[#e8c382] transition-colors">编辑</button>
+        <button onclick="deleteNote('${n.id}')" class="font-mono text-[0.55rem] text-gray-500 hover:text-[#e61919] transition-colors">删除</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openNoteEditor(id) {
+  document.getElementById('note-editor').classList.remove('hidden');
+  document.getElementById('note-title-input').focus();
+  if (id) {
+    const notes = getNotes();
+    const note = notes.find(n => n.id === id);
+    if (note) {
+      document.getElementById('note-title-input').value = note.title;
+      document.getElementById('note-content-input').value = note.content;
+      document.getElementById('note-editing-id').textContent = '编辑模式 · ' + note.id;
+      editingId = id;
+    }
+  } else {
+    document.getElementById('note-title-input').value = '';
+    document.getElementById('note-content-input').value = '';
+    document.getElementById('note-editing-id').textContent = '';
+    editingId = null;
+  }
+  document.getElementById('note-editor').scrollIntoView({ behavior: 'smooth' });
+}
+
+function closeNoteEditor() {
+  document.getElementById('note-editor').classList.add('hidden');
+  editingId = null;
+}
+
+function saveNote() {
+  const title = document.getElementById('note-title-input').value.trim();
+  const content = document.getElementById('note-content-input').value.trim();
+  if (!title && !content) return;
+
+  const notes = getNotes();
+  if (editingId) {
+    const idx = notes.findIndex(n => n.id === editingId);
+    if (idx >= 0) { notes[idx].title = title; notes[idx].content = content; notes[idx].edited = Date.now(); }
+  } else {
+    notes.push({ id: 'n' + Date.now(), title, content, time: Date.now(), edited: null });
+  }
+  saveNotes(notes);
+  closeNoteEditor();
+  renderNotes();
+}
+
+function editNote(id) { openNoteEditor(id); }
+
+function deleteNote(id) {
+  if (!confirm('删除这篇随笔？')) return;
+  const notes = getNotes().filter(n => n.id !== id);
+  saveNotes(notes);
+  renderNotes();
+}
+
+// Init
+renderNotes();
 
 // ═══════════════════════════════════════════
 // PREDICTION TRACKER — parse, store, compare
