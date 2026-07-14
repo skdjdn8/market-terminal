@@ -42,6 +42,7 @@ tailwind.config = {
 
 <!-- Iconify -->
 <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 
 <!-- API Keys (local file, never committed) -->
 <script src="apikeys.js"></script>
@@ -1917,37 +1918,38 @@ async function generateResearchReport() {
 const SEARCH_SYSTEM = `你是金融信息搜索分析师。你的任务是根据市场数据推断可能的驱动事件。只列出高置信度的推断，推测项必须标注。`;
 
 // ═══════════════════════════════════════════
-// NOTES / PORTFOLIO CMS
+// NOTES / PORTFOLIO CMS — Supabase Backend
 // ═══════════════════════════════════════════
+const SUPABASE_URL = 'https://kjdbxsirpkuyoojnsgtv.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_wniWhWzgN5WRFLdI0hkgwA__hmbe95V';
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let editingId = null;
 
-function getNotes() {
-  try { return JSON.parse(localStorage.getItem('userNotes') || '[]'); } catch { return []; }
-}
-function saveNotes(notes) { localStorage.setItem('userNotes', JSON.stringify(notes)); }
-
-function renderNotes() {
+async function renderNotes() {
   const grid = document.getElementById('notes-grid');
   const count = document.getElementById('notes-count');
-  const notes = getNotes();
-  if (count) count.textContent = notes.length + ' 篇随笔';
   if (!grid) return;
 
-  if (notes.length === 0) {
-    grid.innerHTML = `<div class="col-span-full text-center py-16 text-gray-600 font-mono text-sm">暂无随笔 — 点击「✏️ 新建随笔」开始记录</div>`;
+  const { data: notes, error } = await db.from('notes').select('*').order('created_at', { ascending: false });
+  if (error) { console.error(error); grid.innerHTML = '<div class="col-span-full text-center py-16 text-[#e61919] font-mono text-sm">加载失败，请刷新重试</div>'; return; }
+
+  if (count) count.textContent = (notes || []).length + ' 篇随笔（云端同步）';
+
+  if (!notes || notes.length === 0) {
+    grid.innerHTML = `<div class="col-span-full text-center py-16 text-gray-600 font-mono text-sm">暂无随笔 — 任何人都可以点击「✏️ 新建随笔」开始记录</div>`;
     return;
   }
 
-  grid.innerHTML = notes.sort((a, b) => b.time - a.time).map((n, i) => `
+  grid.innerHTML = notes.map(n => `
     <div class="data-card frame-section rounded-sm p-5 relative overflow-hidden group">
       <div class="card-glow"></div>
-      <div class="font-mono text-[0.5rem] tracking-[0.15em] text-gray-600 mb-2">${new Date(n.time).toLocaleString('zh-CN', {hour12:false})}</div>
+      <div class="font-mono text-[0.5rem] tracking-[0.15em] text-gray-600 mb-2">${new Date(n.created_at).toLocaleString('zh-CN', {hour12:false})}</div>
       <div class="font-gloock text-xl text-white mb-3 leading-tight">${escapeHtml(n.title || '无标题')}</div>
       <div class="font-manrope text-sm text-gray-400 leading-relaxed whitespace-pre-wrap line-clamp-6">${escapeHtml(n.content || '')}</div>
       ${n.content && n.content.length > 300 ? `<div class="font-mono text-[0.55rem] text-gray-600 mt-2">...展开阅读</div>` : ''}
       <div class="flex gap-2 mt-4 pt-3 border-t border-white/5 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button onclick="editNote('${n.id}')" class="font-mono text-[0.55rem] text-gray-500 hover:text-[#e8c382] transition-colors">编辑</button>
-        <button onclick="deleteNote('${n.id}')" class="font-mono text-[0.55rem] text-gray-500 hover:text-[#e61919] transition-colors">删除</button>
+        <button onclick="editNote(${n.id})" class="font-mono text-[0.55rem] text-gray-500 hover:text-[#e8c382] transition-colors">编辑</button>
+        <button onclick="deleteNote(${n.id})" class="font-mono text-[0.55rem] text-gray-500 hover:text-[#e61919] transition-colors">删除</button>
       </div>
     </div>
   `).join('');
@@ -1956,22 +1958,24 @@ function renderNotes() {
 function openNoteEditor(id) {
   document.getElementById('note-editor').classList.remove('hidden');
   document.getElementById('note-title-input').focus();
-  if (id) {
-    const notes = getNotes();
-    const note = notes.find(n => n.id === id);
-    if (note) {
-      document.getElementById('note-title-input').value = note.title;
-      document.getElementById('note-content-input').value = note.content;
-      document.getElementById('note-editing-id').textContent = '编辑模式 · ' + note.id;
-      editingId = id;
-    }
-  } else {
+  editingId = id || null;
+  if (!id) {
     document.getElementById('note-title-input').value = '';
     document.getElementById('note-content-input').value = '';
     document.getElementById('note-editing-id').textContent = '';
-    editingId = null;
+  } else {
+    document.getElementById('note-editing-id').textContent = '编辑模式 · ID ' + id;
   }
   document.getElementById('note-editor').scrollIntoView({ behavior: 'smooth' });
+}
+
+async function editNote(id) {
+  const { data } = await db.from('notes').select('*').eq('id', id).single();
+  if (data) {
+    document.getElementById('note-title-input').value = data.title;
+    document.getElementById('note-content-input').value = data.content;
+  }
+  openNoteEditor(id);
 }
 
 function closeNoteEditor() {
@@ -1979,29 +1983,23 @@ function closeNoteEditor() {
   editingId = null;
 }
 
-function saveNote() {
+async function saveNote() {
   const title = document.getElementById('note-title-input').value.trim();
   const content = document.getElementById('note-content-input').value.trim();
   if (!title && !content) return;
 
-  const notes = getNotes();
   if (editingId) {
-    const idx = notes.findIndex(n => n.id === editingId);
-    if (idx >= 0) { notes[idx].title = title; notes[idx].content = content; notes[idx].edited = Date.now(); }
+    await db.from('notes').update({ title, content, edited_at: new Date().toISOString() }).eq('id', editingId);
   } else {
-    notes.push({ id: 'n' + Date.now(), title, content, time: Date.now(), edited: null });
+    await db.from('notes').insert({ id: Date.now(), title, content });
   }
-  saveNotes(notes);
   closeNoteEditor();
   renderNotes();
 }
 
-function editNote(id) { openNoteEditor(id); }
-
-function deleteNote(id) {
+async function deleteNote(id) {
   if (!confirm('删除这篇随笔？')) return;
-  const notes = getNotes().filter(n => n.id !== id);
-  saveNotes(notes);
+  await db.from('notes').delete().eq('id', id);
   renderNotes();
 }
 
