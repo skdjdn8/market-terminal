@@ -45,30 +45,33 @@ const SYMBOLS = {
 // ═══════════════════════════════════
 async function finnhubFetch(endpoint, symbol) {
   const key = CONFIG.FINNHUB_KEY;
-  if (!key) throw new Error('FINNHUB_KEY not set');
+  if (!key) { console.log(`  [SKIP] ${symbol}: no API key`); return null; }
 
-  if (endpoint === 'quote') {
-    const url = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${key}`;
+  const url = endpoint === 'quote'
+    ? `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${key}`
+    : (() => { const to = Math.floor(Date.now()/1000); const from = to - 86400*10; return `https://finnhub.io/api/v1/${endpoint}?symbol=${encodeURIComponent(symbol)}&resolution=D&from=${from}&to=${to}&token=${key}`; })();
+
+  try {
     const res = await fetch(url);
-    if (!res.ok) throw new Error(`Quote ${res.status}`);
+    if (!res.ok) { console.log(`  [FAIL] ${symbol}: HTTP ${res.status} ${res.statusText}`); return null; }
     const d = await res.json();
-    if (!d || !isFinite(d.c) || d.c <= 0) return null;
-    return { price: d.c, high: d.h, low: d.l, open: d.o, prevClose: d.pc };
-  }
 
-  // forex/crypto candle
-  const to = Math.floor(Date.now() / 1000);
-  const from = to - 86400 * 10;
-  const url = `https://finnhub.io/api/v1/${endpoint}?symbol=${encodeURIComponent(symbol)}&resolution=D&from=${from}&to=${to}&token=${key}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Candle ${res.status}`);
-  const d = await res.json();
-  if (d.s !== 'ok' || !d.c || d.c.length === 0) return null;
-  const last = d.c.length - 1;
-  const price = d.c[last];
-  if (!isFinite(price) || price <= 0) return null;
-  const prevClose = last > 0 && isFinite(d.c[last - 1]) && d.c[last - 1] > 0 ? d.c[last - 1] : price;
-  return { price, high: d.h[last], low: d.l[last], open: d.o[last], prevClose };
+    if (endpoint === 'quote') {
+      if (!d || !isFinite(d.c) || d.c <= 0) { console.log(`  [NULL] ${symbol}: no price data, c=${d?.c}`); return null; }
+      return { price: d.c, high: d.h, low: d.l, open: d.o, prevClose: d.pc };
+    }
+
+    if (d.s !== 'ok' || !d.c || d.c.length === 0) { console.log(`  [NULL] ${symbol}: candle empty, s=${d?.s}`); return null; }
+    const last = d.c.length - 1;
+    const price = d.c[last];
+    if (!isFinite(price) || price <= 0) { console.log(`  [NULL] ${symbol}: bad price=${price}`); return null; }
+    const prevClose = last > 0 && isFinite(d.c[last-1]) && d.c[last-1] > 0 ? d.c[last-1] : price;
+    console.log(`  [OK] ${symbol}: price=${price}`);
+    return { price, high: d.h[last], low: d.l[last], open: d.o[last], prevClose };
+  } catch (e) {
+    console.log(`  [ERR] ${symbol}: ${e.message}`);
+    return null;
+  }
 }
 
 async function fetchAllData() {
