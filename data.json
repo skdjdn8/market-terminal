@@ -1,8 +1,188 @@
 {
-  "results": {},
-  "prices": {},
-  "changes": {},
-  "timestamp": "2026-07-14T19:25:54.453Z",
+  "results": {
+    "GOLD": {
+      "price": 4062,
+      "high": 4112.5,
+      "low": 3990.4,
+      "prevClose": 4130.6,
+      "name": "Gold",
+      "unit": "USD/oz",
+      "digits": 2
+    },
+    "SILVER": {
+      "price": 59.08,
+      "high": 60.04,
+      "low": 57.165,
+      "prevClose": 60.378,
+      "name": "Silver",
+      "unit": "USD/oz",
+      "digits": 2
+    },
+    "PLAT": {
+      "price": 1643.1,
+      "high": 1675,
+      "low": 1594.5,
+      "prevClose": 1618.8,
+      "name": "Platinum",
+      "unit": "USD/oz",
+      "digits": 2
+    },
+    "PALL": {
+      "price": 1306.5,
+      "high": 1325.5,
+      "low": 1243.5,
+      "prevClose": 1243.9,
+      "name": "Palladium",
+      "unit": "USD/oz",
+      "digits": 2
+    },
+    "WTI": {
+      "price": 79.6,
+      "high": 81.27,
+      "low": 77.84,
+      "prevClose": 72.08,
+      "name": "WTI Crude",
+      "unit": "USD/bbl",
+      "digits": 2
+    },
+    "BRENT": {
+      "price": 85.13,
+      "high": 87.54,
+      "low": 83.04,
+      "prevClose": 76.3,
+      "name": "Brent Crude",
+      "unit": "USD/bbl",
+      "digits": 2
+    },
+    "COPPER": {
+      "price": 6.366,
+      "high": 6.444,
+      "low": 6.262,
+      "prevClose": 6.215,
+      "name": "Copper",
+      "unit": "USD/lb",
+      "digits": 2
+    },
+    "BTC": {
+      "price": 64502.16,
+      "high": 64833.668,
+      "low": 62238.242,
+      "prevClose": 64127.14,
+      "name": "Bitcoin",
+      "unit": "USD",
+      "digits": 0
+    },
+    "EURUSD": {
+      "price": 1.1427,
+      "high": 1.1463,
+      "low": 1.1382,
+      "prevClose": 1.1404,
+      "name": "EUR/USD",
+      "unit": "",
+      "digits": 4
+    },
+    "DXY": {
+      "price": 100.907,
+      "high": 101.322,
+      "low": 100.607,
+      "prevClose": 100.94,
+      "name": "DXY",
+      "unit": "",
+      "digits": 2
+    },
+    "US10Y": {
+      "price": 4.585,
+      "high": 4.614,
+      "low": 4.525,
+      "prevClose": 4.569,
+      "name": "US 10Y",
+      "unit": "%",
+      "digits": 2
+    },
+    "US3M": {
+      "price": 3.7,
+      "high": 3.75,
+      "low": 3.693,
+      "prevClose": 3.723,
+      "name": "US 3M",
+      "unit": "%",
+      "digits": 2
+    },
+    "_AUSR": {
+      "value": 68.75423155044008,
+      "name": "Gold/Silver Ratio"
+    },
+    "_SPREAD": {
+      "value": 88.49999999999997,
+      "name": "10Y-3M Spread",
+      "unit": "bp"
+    }
+  },
+  "prices": {
+    "GOLD": 4062,
+    "SILVER": 59.08,
+    "PLAT": 1643.1,
+    "PALL": 1306.5,
+    "WTI": 79.6,
+    "BRENT": 85.13,
+    "COPPER": 6.366,
+    "BTC": 64502.16,
+    "EURUSD": 1.1427,
+    "DXY": 100.907,
+    "US10Y": 4.585,
+    "US3M": 3.7
+  },
+  "changes": {
+    "GOLD": {
+      "abs": -68.60000000000036,
+      "pct": -1.6607756742361972
+    },
+    "SILVER": {
+      "abs": -1.2980000000000018,
+      "pct": -2.149789658484882
+    },
+    "PLAT": {
+      "abs": 24.299999999999955,
+      "pct": 1.501111934766491
+    },
+    "PALL": {
+      "abs": 62.59999999999991,
+      "pct": 5.03255888737036
+    },
+    "WTI": {
+      "abs": 7.519999999999996,
+      "pct": 10.432852386237508
+    },
+    "BRENT": {
+      "abs": 8.829999999999998,
+      "pct": 11.572739187418085
+    },
+    "COPPER": {
+      "abs": 0.1509999999999998,
+      "pct": 2.429605792437648
+    },
+    "BTC": {
+      "abs": 375.0200000000041,
+      "pct": 0.5848069943552825
+    },
+    "EURUSD": {
+      "abs": 0.0022999999999999687,
+      "pct": 0.20168361978252972
+    },
+    "DXY": {
+      "abs": -0.03300000000000125,
+      "pct": -0.03269268872597707
+    },
+    "US10Y": {
+      "abs": 0.016000000000000014,
+      "pct": 0.35018603633180156
+    },
+    "US3M": {
+      "abs": -0.022999999999999687,
+      "pct": -0.6177813591189817
+    }
+  },
+  "timestamp": "2026-07-14T19:30:41.138Z",
   "fng": {
     "value": 22,
     "label": "Extreme Fear"
