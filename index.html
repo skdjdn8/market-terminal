@@ -890,17 +890,54 @@ const SYMBOL_MAP = {
   'US10Y': { fh: '^TNX',         name: 'US 10Y Yield',    unit: '%',   digits: 2, simPrice: 4.32,   spread: 0.01, simVol: 0.012 },
   'US3M':  { fh: '^IRX',         name: 'US 3M T-Bill',    unit: '%',   digits: 2, simPrice: 5.28,   spread: 0.01, simVol: 0.015 },
   'BTC':   { fh: 'BINANCE:BTCUSDT',name:'Bitcoin',         unit: 'USD',  digits:0, simPrice: 67250,  spread: 25.0, simVol: 0.025 },
-  // --- Metals/Forex/Commodities (Finnhub OANDA) ---
-  'GOLD':  { fh: 'OANDA:XAU_USD',name:'Gold Spot',      unit:'USD/oz',digits:2,simPrice:2350.80,spread:0.50,simVol:0.006},
-  'SILVER':{ sn: 'hf_XAG',  fh: 'OANDA:XAG_USD',name:'Silver Spot',    unit:'USD/oz',digits:2,simPrice:27.85, spread:0.03,simVol:0.014},
-  'PLAT':  { sn: 'hf_XPT',  fh: 'OANDA:XPT_USD',name:'Platinum Spot',  unit:'USD/oz',digits:2,simPrice:985.20,spread:1.20,simVol:0.012},
-  'PALL':  { sn: 'hf_XPD',  fh: 'OANDA:XPD_USD',name:'Palladium Spot', unit:'USD/oz',digits:2,simPrice:1020.50,spread:2.50,simVol:0.016},
-  'WTI':   { sn: 'hf_CL',   fh: 'OANDA:WTI_USD',name:'WTI Crude Oil',  unit:'USD/bbl',digits:2,simPrice:78.50,spread:0.03,simVol:0.015},
-  'BRENT': { sn: 'hf_OIL',  fh: 'OANDA:BCO_USD',name:'Brent Crude Oil',unit:'USD/bbl',digits:2,simPrice:82.30,spread:0.03,simVol:0.014},
-  'COPPER':{ sn: 'hf_CAD',  fh: 'OANDA:XCu_USD',name:'Copper Futures', unit:'USD/lb',digits:2,simPrice:4.12,spread:0.002,simVol:0.018},
-  'DXY':   { sn: 'fx_susdidx',fh:'DX-Y.NYB', name:'US Dollar Index',   unit:'',     digits:2,simPrice:104.25,spread:0.02,simVol:0.005},
-  'EURUSD':{ sn: 'fx_seurusd',fh:'OANDA:EUR_USD',name:'EUR/USD',       unit:'',     digits:4,simPrice:1.0850,spread:0.0001,simVol:0.005},
+  // --- Metals/Forex/Commodities: Yahoo Finance primary + Finnhub fallback ---
+  'GOLD':  { yh:'XAUUSD=X',fh:'OANDA:XAU_USD',name:'Gold Spot',     unit:'USD/oz',digits:2,simPrice:4055,spread:0.50,simVol:0.006},
+  'SILVER':{ yh:'XAGUSD=X',fh:'OANDA:XAG_USD',name:'Silver Spot',   unit:'USD/oz',digits:2,simPrice:55,  spread:0.03,simVol:0.014},
+  'PLAT':  { yh:'PL=F',    fh:'OANDA:XPT_USD',name:'Platinum Spot', unit:'USD/oz',digits:2,simPrice:1250,spread:1.20,simVol:0.012},
+  'PALL':  { yh:'PA=F',    fh:'OANDA:XPD_USD',name:'Palladium Spot',unit:'USD/oz',digits:2,simPrice:1300,spread:2.50,simVol:0.016},
+  'WTI':   { yh:'CL=F',    fh:'OANDA:WTI_USD',name:'WTI Crude Oil', unit:'USD/bbl',digits:2,simPrice:78.50,spread:0.03,simVol:0.015},
+  'BRENT': { yh:'BZ=F',    fh:'OANDA:BCO_USD',name:'Brent Crude Oil',unit:'USD/bbl',digits:2,simPrice:82.30,spread:0.03,simVol:0.014},
+  'COPPER':{ yh:'HG=F',    fh:'OANDA:XCu_USD',name:'Copper Futures',unit:'USD/lb',digits:2,simPrice:4.12,spread:0.002,simVol:0.018},
+  'DXY':   { yh:'DX-Y.NYB',fh:'DX-Y.NYB',    name:'US Dollar Index', unit:'',     digits:2,simPrice:104.25,spread:0.02,simVol:0.005},
+  'EURUSD':{ yh:'EURUSD=X',fh:'OANDA:EUR_USD',name:'EUR/USD',       unit:'',     digits:4,simPrice:1.0850,spread:0.0001,simVol:0.005},
 };
+
+// ═══════════════════════════════════════════
+// Yahoo Finance Client — free, no auth, reliable spot prices
+// ═══════════════════════════════════════════
+class YahooClient {
+  constructor() { this.ready = true; }
+
+  async fetchQuote(yahooSymbol) {
+    try {
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahooSymbol)}?interval=1d&range=5d`;
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      const json = await res.json();
+      const meta = json?.chart?.result?.[0]?.meta;
+      if (!meta || !meta.regularMarketPrice || meta.regularMarketPrice <= 0) return null;
+      return {
+        price: meta.regularMarketPrice,
+        change: meta.regularMarketPrice - (meta.previousClose || meta.chartPreviousClose || meta.regularMarketPrice),
+        changePct: meta.previousClose ? ((meta.regularMarketPrice - meta.previousClose) / meta.previousClose) * 100 : 0,
+        high: meta.regularMarketDayHigh || meta.regularMarketPrice,
+        low: meta.regularMarketDayLow || meta.regularMarketPrice,
+        open: meta.regularMarketOpen || meta.regularMarketPrice,
+        prevClose: meta.previousClose || meta.chartPreviousClose || meta.regularMarketPrice,
+        source: 'yahoo',
+      };
+    } catch(e) { console.warn('Yahoo fetch failed:', e.message); return null; }
+  }
+
+  async fetchBatch(yahooSymbols) {
+    const results = {};
+    for (const sym of yahooSymbols) {
+      results[sym] = await this.fetchQuote(sym);
+      await new Promise(r => setTimeout(r, 200)); // rate limit
+    }
+    return results;
+  }
+}
 
 // ═══════════════════════════════════════════
 // Finnhub API Client — uses correct endpoint per asset class
@@ -1025,18 +1062,21 @@ class SimulatedAdapter {
 class MarketDataEngine {
   constructor() {
     this.finnhub = new FinnhubClient(API_KEYS.FINNHUB);
+    this.yahoo = new YahooClient();
     this.sim = new SimulatedAdapter();
 
     this.prices = {};
     this.history = {};
-    this.source = {};     // 'sina' | 'finnhub' | 'simulated'
+    this.source = {};     // 'yahoo' | 'finnhub' | 'simulated'
     this.lastFetch = {};
     this.prevClose = {};
 
-    // Build Finnhub symbol list
+    // Build symbol lists
     this.fhSymbols = [];
+    this.yhSymbols = [];
     for (const [key, cfg] of Object.entries(SYMBOL_MAP)) {
       if (cfg.fh) this.fhSymbols.push({ key, fh: cfg.fh, fallbackFh: cfg.fhFallback || null });
+      if (cfg.yh) this.yhSymbols.push({ key, yh: cfg.yh });
     }
 
     // Init all symbols with seed data
@@ -1090,13 +1130,30 @@ class MarketDataEngine {
   async fetchRealData() {
     let successCount = 0;
 
-    // Finnhub: all symbols
+    // 1) Yahoo Finance: metals, forex, commodities (accurate spot prices)
+    if (this.yhSymbols.length > 0) {
+      try {
+        const yhList = this.yhSymbols.map(s => s.yh);
+        const yhResults = await this.yahoo.fetchBatch(yhList);
+        for (const item of this.yhSymbols) {
+          const data = yhResults[item.yh];
+          if (data && data.price) {
+            this._applyPrice(item.key, data, 'yahoo');
+            successCount++;
+          }
+        }
+      } catch(e) { console.warn('Yahoo fetch failed:', e.message); }
+    }
+
+    // 2) Finnhub: treasuries, crypto (remaining symbols without Yahoo)
     if (this.finnhub.ready) {
       try {
-        const fhList = this.fhSymbols.map(s => s.fh);
+        const fhOnly = this.fhSymbols.filter(s => !SYMBOL_MAP[s.key]?.yh);
+        if (fhOnly.length === 0) { this.connected = successCount > 0; return successCount > 0; }
+        const fhList = fhOnly.map(s => s.fh);
         const results = await this.finnhub.fetchBatch(fhList);
 
-        for (const item of this.fhSymbols) {
+        for (const item of fhOnly) {
           let data = results[item.fh];
           if ((!data || !data.price) && item.fallbackFh) {
             try { data = await this.finnhub.fetchQuote(item.fallbackFh); } catch {}
@@ -1144,7 +1201,7 @@ class MarketDataEngine {
     const prev = this.prevClose[key];
     const source = this.source[key];
     // Use prevClose if valid and we have live API data
-    if (isFinite(prev) && prev > 0 && prev !== price && source === 'finnhub') {
+    if (isFinite(prev) && prev > 0 && prev !== price && (source === 'finnhub' || source === 'yahoo')) {
       const pct = ((price - prev) / prev) * 100;
       if (isFinite(pct)) return pct;
     }
