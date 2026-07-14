@@ -886,22 +886,76 @@ const API_KEYS = {
 // ═══════════════════════════════════════════
 const SYMBOL_MAP = {
   // --- Indices (now served by TradingView widgets) — remove from data engine ---
+  // --- Treasuries + Crypto (Finnhub) ---
   'US10Y': { fh: '^TNX',         name: 'US 10Y Yield',    unit: '%',   digits: 2, simPrice: 4.32,   spread: 0.01, simVol: 0.012 },
   'US3M':  { fh: '^IRX',         name: 'US 3M T-Bill',    unit: '%',   digits: 2, simPrice: 5.28,   spread: 0.01, simVol: 0.015 },
-  'DXY':   { fh: 'DX-Y.NYB',     name: 'US Dollar Index', unit: '',    digits: 2, simPrice: 104.25, spread: 0.02, simVol: 0.005 },
-  'BRENT': { fh: 'OANDA:BCO_USD',name: 'Brent Crude Oil', unit: 'USD/bbl',digits:2,simPrice: 82.30, spread: 0.03, simVol: 0.014 },
-  'EURUSD':{ fh: 'OANDA:EUR_USD',name: 'EUR/USD',         unit: '',    digits: 4, simPrice: 1.0850, spread: 0.0001,simVol: 0.005 },
-  'COPPER':{ fh: 'OANDA:XCu_USD',name: 'Copper Spot',     unit: 'USD/lb',digits:2, simPrice: 4.12,   spread: 0.002,simVol: 0.018 },
-  // --- Forex / Metals (Finnhub /forex/candle) ---
-  'GOLD':  { fh: 'OANDA:XAU_USD',name: 'Gold Spot',       unit: 'USD/oz',digits:2, simPrice: 2350.80,spread: 0.50, simVol: 0.006 },
-  'SILVER':{ fh: 'OANDA:XAG_USD',name: 'Silver Spot',     unit: 'USD/oz',digits:2, simPrice: 27.85,  spread: 0.03, simVol: 0.014 },
-  'PLAT':  { fh: 'OANDA:XPT_USD',name: 'Platinum Spot',   unit: 'USD/oz',digits:2, simPrice: 985.20, spread: 1.20, simVol: 0.012 },
-  'PALL':  { fh: 'OANDA:XPD_USD',name: 'Palladium Spot',  unit: 'USD/oz',digits:2, simPrice: 1020.50,spread: 2.50, simVol: 0.016 },
-  'WTI':   { fh: 'OANDA:WTI_USD',name: 'WTI Crude Oil',   unit: 'USD/bbl',digits:2,simPrice: 78.50,  spread: 0.03, simVol: 0.015 },
-  // --- Crypto (Finnhub /crypto/candle) ---
   'BTC':   { fh: 'BINANCE:BTCUSDT',name:'Bitcoin',         unit: 'USD',  digits:0, simPrice: 67250,  spread: 25.0, simVol: 0.025 },
-  // --- Indices (Finnhub) ---
+  // --- Metals/Forex/Commodities: Sina Finance primary (matches 东方财富) + Finnhub fallback ---
+  'GOLD':  { sn: 'hf_XAU',  fh: 'OANDA:XAU_USD',name:'Gold Spot',      unit:'USD/oz',digits:2,simPrice:2350.80,spread:0.50,simVol:0.006},
+  'SILVER':{ sn: 'hf_XAG',  fh: 'OANDA:XAG_USD',name:'Silver Spot',    unit:'USD/oz',digits:2,simPrice:27.85, spread:0.03,simVol:0.014},
+  'PLAT':  { sn: 'hf_XPT',  fh: 'OANDA:XPT_USD',name:'Platinum Spot',  unit:'USD/oz',digits:2,simPrice:985.20,spread:1.20,simVol:0.012},
+  'PALL':  { sn: 'hf_XPD',  fh: 'OANDA:XPD_USD',name:'Palladium Spot', unit:'USD/oz',digits:2,simPrice:1020.50,spread:2.50,simVol:0.016},
+  'WTI':   { sn: 'hf_CL',   fh: 'OANDA:WTI_USD',name:'WTI Crude Oil',  unit:'USD/bbl',digits:2,simPrice:78.50,spread:0.03,simVol:0.015},
+  'BRENT': { sn: 'hf_OIL',  fh: 'OANDA:BCO_USD',name:'Brent Crude Oil',unit:'USD/bbl',digits:2,simPrice:82.30,spread:0.03,simVol:0.014},
+  'COPPER':{ sn: 'hf_CAD',  fh: 'OANDA:XCu_USD',name:'Copper Futures', unit:'USD/lb',digits:2,simPrice:4.12,spread:0.002,simVol:0.018},
+  'DXY':   { sn: 'fx_susdidx',fh:'DX-Y.NYB', name:'US Dollar Index',   unit:'',     digits:2,simPrice:104.25,spread:0.02,simVol:0.005},
+  'EURUSD':{ sn: 'fx_seurusd',fh:'OANDA:EUR_USD',name:'EUR/USD',       unit:'',     digits:4,simPrice:1.0850,spread:0.0001,simVol:0.005},
 };
+
+// ═══════════════════════════════════════════
+// Sina Finance Client — matches 东方财富 spot prices
+// Free, no auth, JSONP-style via script tag
+// ═══════════════════════════════════════════
+class SinaClient {
+  constructor() { this.ready = true; }
+
+  // Fetch prices for multiple Sina symbols
+  async fetchBatch(snSymbols) {
+    if (snSymbols.length === 0) return {};
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      const list = snSymbols.join(',');
+      // Add random param to avoid caching
+      script.src = `https://hq.sinajs.cn/list=${list}&_=${Date.now()}`;
+      script.onload = () => {
+        const results = {};
+        for (const sn of snSymbols) {
+          const key = 'hq_str_' + sn;
+          const raw = window[key];
+          if (!raw) { results[sn] = null; continue; }
+          try {
+            const parts = raw.split(',');
+            const isForex = sn.startsWith('fx_');
+            // Sina format: price, changeAmt, changePct, prevClose/open, high, low, ...
+            // hf_ (futures): [0]=price, [1]=change, [2]=pct, [3]=prevClose, [4]=open, [5]=high, [6]=low
+            // fx_ (forex):   [0]=price, [1]=change, [2]=pct, [3]=prevClose, [4]=open, [5]=high, [6]=low
+            const price = parseFloat(parts[0]);
+            if (!isFinite(price) || price <= 0) { results[sn] = null; continue; }
+            results[sn] = {
+              price,
+              change: parseFloat(parts[1]) || 0,
+              changePct: parseFloat(parts[2]) || 0,
+              prevClose: parseFloat(parts[3]) || parseFloat(parts[4]) || price,
+              high: parseFloat(parts[5]) || price,
+              low: parseFloat(parts[6]) || price,
+              open: parseFloat(parts[4]) || price,
+              source: 'sina',
+            };
+          } catch(e) { results[sn] = null; }
+          // Clean up global
+          try { delete window[key]; } catch {}
+        }
+        document.head.removeChild(script);
+        resolve(results);
+      };
+      script.onerror = () => {
+        document.head.removeChild(script);
+        resolve({});
+      };
+      document.head.appendChild(script);
+    });
+  }
+}
 
 // ═══════════════════════════════════════════
 // Finnhub API Client — uses correct endpoint per asset class
@@ -1026,22 +1080,21 @@ class SimulatedAdapter {
 class MarketDataEngine {
   constructor() {
     this.finnhub = new FinnhubClient(API_KEYS.FINNHUB);
+    this.sina = new SinaClient();
     this.sim = new SimulatedAdapter();
 
     this.prices = {};
     this.history = {};
-    this.source = {};     // 'finnhub' | 'simulated'
+    this.source = {};     // 'sina' | 'finnhub' | 'simulated'
     this.lastFetch = {};
     this.prevClose = {};
 
-    // Build Finnhub symbol list
+    // Build symbol lists
     this.fhSymbols = [];
+    this.snSymbols = [];
     for (const [key, cfg] of Object.entries(SYMBOL_MAP)) {
-      if (cfg.fh) this.fhSymbols.push({
-        key,
-        fh: cfg.fh,
-        fallbackFh: cfg.fhFallback || null,
-      });
+      if (cfg.fh) this.fhSymbols.push({ key, fh: cfg.fh, fallbackFh: cfg.fhFallback || null });
+      if (cfg.sn) this.snSymbols.push({ key, sn: cfg.sn });
     }
 
     // Init all symbols with seed data
@@ -1095,19 +1148,34 @@ class MarketDataEngine {
   async fetchRealData() {
     let successCount = 0;
 
-    // 1) Finnhub: indices, forex, crypto
+    // 1) Sina Finance: metals, forex, commodities (matches 东方财富 spot prices)
+    if (this.snSymbols.length > 0) {
+      try {
+        const snList = this.snSymbols.map(s => s.sn);
+        const snResults = await this.sina.fetchBatch(snList);
+        for (const item of this.snSymbols) {
+          const data = snResults[item.sn];
+          if (data && data.price) {
+            this._applyPrice(item.key, data, 'sina');
+            successCount++;
+          }
+        }
+      } catch(e) { console.warn('Sina fetch failed:', e.message); }
+    }
+
+    // 2) Finnhub: treasuries, crypto (remaining symbols without Sina)
     if (this.finnhub.ready) {
       try {
-        const fhList = this.fhSymbols.map(s => s.fh);
+        // Only fetch symbols that don't already have Sina data
+        const fhOnly = this.fhSymbols.filter(s => !SYMBOL_MAP[s.key]?.sn);
+        if (fhOnly.length === 0) { this.connected = successCount > 0; return successCount > 0; }
+        const fhList = fhOnly.map(s => s.fh);
         const results = await this.finnhub.fetchBatch(fhList);
 
-        for (const item of this.fhSymbols) {
+        for (const item of fhOnly) {
           let data = results[item.fh];
-          // Fallback: DX-Y.NYB might not work → try OANDA:USD_JPY
           if ((!data || !data.price) && item.fallbackFh) {
-            try {
-              data = await this.finnhub.fetchQuote(item.fallbackFh);
-            } catch {}
+            try { data = await this.finnhub.fetchQuote(item.fallbackFh); } catch {}
           }
 
           if (data && data.price) {
