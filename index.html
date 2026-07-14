@@ -514,7 +514,7 @@ body {
         <div class="reveal-word"><span>大宗商品</span></div><br>
         <div class="reveal-word"><span class="text-gradient-gold">COMMODITIES</span></div>
       </h2>
-      <p class="font-manrope text-sm text-gray-500 mt-4 max-w-xl">全球关键能源价格追踪 — WTI 原油现货实时数据与波动率监控</p>
+      <p class="font-manrope text-sm text-gray-500 mt-4 max-w-xl">全球关键能源价格追踪 — 布伦特原油现货实时数据与波动率监控</p>
     </div>
 
     <!-- Featured Commodity Card -->
@@ -527,7 +527,7 @@ body {
           </div>
           <div class="flex-1">
             <div class="font-mono text-[0.6rem] tracking-[0.15em] text-gray-500 mb-1">ENERGY · 能源</div>
-            <div class="font-gloock text-3xl text-white mb-1">WTI 原油</div>
+            <div class="font-gloock text-3xl text-white mb-1">布伦特原油</div>
             <div class="font-bebas text-5xl tracking-tight text-white" id="price-oil">--</div>
             <div class="font-mono text-sm mt-1" id="change-oil">--</div>
             <div class="mt-3 flex gap-4 text-[0.6rem] font-mono tracking-wider text-gray-500">
@@ -763,7 +763,7 @@ body {
         <!-- WTI Prediction -->
         <div class="bg-white/[0.02] rounded-sm p-4 border border-white/5">
           <div class="flex items-center justify-between mb-2">
-            <span class="font-gloock text-lg text-white">🛢️ WTI 原油</span>
+            <span class="font-gloock text-lg text-white">🛢️ 布伦特原油</span>
             <span class="font-mono text-[0.5rem] text-gray-600" id="pred-wti-time"></span>
           </div>
           <div class="grid grid-cols-3 gap-3 text-center">
@@ -1540,9 +1540,9 @@ function updateUI() {
   });
 
   // Commodities
-  // Commodities (WTI only)
+  // Commodities (Brent)
   (() => {
-    const key = 'WTI', k = 'oil';
+    const key = 'BRENT', k = 'oil';
     const p = engine.getPrice(key);
     const ch = engine.getChange(key);
     const chp = engine.getChangePercent(key);
@@ -2150,11 +2150,11 @@ function storePrediction(predictions) {
   const record = {
     time: Date.now(),
     timeStr: new Date().toLocaleString('zh-CN', { hour12: false }),
-    WTI_price: engine.getPrice('WTI'),
+    BRENT_price: engine.getPrice('BRENT'),
     GOLD_price: engine.getPrice('GOLD'),
-    WTI_dir: predictions.WTI_dir || '--',
-    WTI_low: predictions.WTI_low || null,
-    WTI_high: predictions.WTI_high || null,
+    BRENT_dir: predictions.WTI_dir || '--',
+    BRENT_low: predictions.WTI_low || null,
+    BRENT_high: predictions.WTI_high || null,
     GOLD_dir: predictions.GOLD_dir || '--',
     GOLD_low: predictions.GOLD_low || null,
     GOLD_high: predictions.GOLD_high || null,
@@ -2176,7 +2176,7 @@ function updatePredictionTracker() {
   if (tracker) tracker.classList.remove('hidden');
 
   const last = history[history.length - 1];
-  const nowWTI = engine.getPrice('WTI');
+  const nowBRENT = engine.getPrice('BRENT');
   const nowGold = engine.getPrice('GOLD');
 
   // Age
@@ -2188,13 +2188,13 @@ function updatePredictionTracker() {
   // WTI
   document.getElementById('pred-wti-dir').textContent = last.WTI_dir || '--';
   document.getElementById('pred-wti-range').textContent = last.WTI_low ? `$${last.WTI_low} - $${last.WTI_high}` : '未指定';
-  document.getElementById('pred-wti-now').textContent = `$${nowWTI.toFixed(2)}`;
+  document.getElementById('pred-wti-now').textContent = `$${nowBRENT.toFixed(2)}`;
 
-  const wtiAcc = calcAccuracy(last.WTI_dir, last.WTI_low, last.WTI_high, last.WTI_price, nowWTI);
-  document.getElementById('pred-wti-bar').style.width = wtiAcc + '%';
-  document.getElementById('pred-wti-bar').style.background = wtiAcc > 60 ? '#4af626' : wtiAcc > 30 ? '#e8c382' : '#e61919';
-  document.getElementById('pred-wti-acc').textContent = wtiAcc + '%';
-  document.getElementById('pred-wti-acc').style.color = wtiAcc > 60 ? '#4af626' : wtiAcc > 30 ? '#e8c382' : '#e61919';
+  const brentAcc = calcAccuracy(last.BRENT_dir, last.BRENT_low, last.BRENT_high, last.BRENT_price, nowBRENT);
+  document.getElementById('pred-wti-bar').style.width = brentAcc + '%';
+  document.getElementById('pred-wti-bar').style.background = brentAcc > 60 ? '#4af626' : brentAcc > 30 ? '#e8c382' : '#e61919';
+  document.getElementById('pred-wti-acc').textContent = brentAcc + '%';
+  document.getElementById('pred-wti-acc').style.color = brentAcc > 60 ? '#4af626' : brentAcc > 30 ? '#e8c382' : '#e61919';
 
   // Gold
   document.getElementById('pred-gold-dir').textContent = last.GOLD_dir || '--';
