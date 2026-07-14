@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: '24' }
+        with: { node-version: '22' }
       - name: Fetch market data
         env:
           FINNHUB_KEY: ${{ secrets.FINNHUB_KEY }}
@@ -30,12 +30,13 @@ jobs:
           git push
 
   daily-report:
+    needs: fetch-data
     runs-on: ubuntu-latest
     if: github.event.schedule == '30 0 * * *' || github.event_name == 'workflow_dispatch'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: '24' }
+        with: { node-version: '22' }
       - name: Run research pipeline
         env:
           FINNHUB_KEY: ${{ secrets.FINNHUB_KEY }}
