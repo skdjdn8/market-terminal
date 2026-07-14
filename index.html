@@ -727,6 +727,17 @@ body {
       <p class="font-manrope text-sm text-gray-500 mt-3 max-w-lg">DeepSeek 驱动的多维度市场分析 — 基于实时数据 + 跨资产联动研判</p>
     </div>
 
+    <!-- GitHub Token Setup (first time only) -->
+    <div id="github-token-setup" class="hidden frame-section rounded-sm p-4 mb-6">
+      <div class="flex items-center gap-3">
+        <iconify-icon icon="solar:lock-password-linear" class="text-[#e8c382] text-lg"></iconify-icon>
+        <input id="github-token-input" type="password" placeholder="粘贴 GitHub Token 以启用自动发布..."
+          class="flex-1 bg-transparent border border-white/10 rounded-sm px-3 py-2 font-mono text-xs text-white outline-none focus:border-[#e8c382] transition-colors">
+        <button onclick="saveGithubToken()" class="px-4 py-2 rounded-sm bg-[#e8c382] text-[#070707] font-mono text-xs tracking-wider font-semibold hover:bg-[#f0d89c]">保存</button>
+      </div>
+      <div class="font-mono text-[0.5rem] text-gray-600 mt-2">Token 仅存浏览器本地，不上传任何服务器。生成研报后自动发布到网站供所有人访问。</div>
+    </div>
+
     <!-- Controls -->
     <div class="flex flex-wrap items-center gap-4 mb-8 frame-section-entry">
       <button id="btn-generate-report"
@@ -1902,7 +1913,20 @@ async function generateResearchReport() {
         [&_code]:font-mono [&_code]:text-xs [&_code]:bg-white/5 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded-sm
         [&_hr]:border-white/10">${renderMarkdown(finalReport)}</div>`;
 
-    status.textContent = `✅ 10-agent 研报完成 — ${now.toLocaleTimeString('zh-CN', {hour12:false})} (耗时 ${elapsed}s)`;
+    // ── Publish to GitHub ──
+    let publishMsg = '';
+    const token = localStorage.getItem('github_publish_token');
+    if (token) {
+      try {
+        await publishToGitHub(token, finalReport, now);
+        publishMsg = ' · 📡 已发布到网站';
+      } catch(e) { publishMsg = ' · ⚠️ 发布失败: ' + e.message; }
+    } else {
+      document.getElementById('github-token-setup').classList.remove('hidden');
+      publishMsg = ' · 💡 设置 Token 可自动发布';
+    }
+
+    status.textContent = `✅ 10-agent 研报完成 — ${now.toLocaleTimeString('zh-CN', {hour12:false})} (耗时 ${elapsed}s)${publishMsg}`;
     btnText.textContent = '⚡ 重新生成';
 
   } catch (e) {
@@ -2134,6 +2158,73 @@ function calcAccuracy(dirPred, lowPred, highPred, priceAtPred, priceNow) {
     else if (dist < range * 0.5) score += 10; // somewhat near
   }
   return score;
+}
+
+// ═══════════════════════════════════════════
+// GITHUB PUBLISH — push report to repo
+// ═══════════════════════════════════════════
+function saveGithubToken() {
+  const token = document.getElementById('github-token-input').value.trim();
+  if (!token) return;
+  localStorage.setItem('github_publish_token', token);
+  document.getElementById('github-token-setup').classList.add('hidden');
+  document.getElementById('report-status').textContent = '✅ Token 已保存 — 生成研报后将自动发布到网站';
+}
+
+// Show token setup if needed
+(function() {
+  if (!localStorage.getItem('github_publish_token')) {
+    document.getElementById('github-token-setup').classList.remove('hidden');
+  }
+})();
+
+async function publishToGitHub(token, reportContent, date) {
+  const owner = 'skdjdn8';
+  const repo = 'market-terminal';
+  const apiBase = `https://api.github.com/repos/${owner}/${repo}/contents`;
+
+  const reportJson = JSON.stringify({
+    timestamp: date.toISOString(),
+    title: '市场日报',
+    agents: [],
+    reviewers: [],
+    content: reportContent,
+    published: 'manual',
+  }, null, 2);
+
+  // Upload report.json
+  let sha = null;
+  try {
+    const existing = await fetch(`${apiBase}/report.json`, {
+      headers: { 'Authorization': `token ${token}` }
+    });
+    if (existing.ok) {
+      const data = await existing.json();
+      sha = data.sha;
+    }
+  } catch {}
+
+  const body = {
+    message: `report: manual publish ${date.toISOString().slice(0,16)}`,
+    content: (() => { const bytes = new TextEncoder().encode(reportJson); return btoa(String.fromCharCode(...bytes)); })(),
+    branch: 'main',
+  };
+  if (sha) body.sha = sha;
+
+  const res = await fetch(`${apiBase}/report.json`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `token ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.message || `HTTP ${res.status}`);
+  }
+  console.log('Published to GitHub ✓');
 }
 
 // Update tracker periodically
