@@ -1,44 +1,35 @@
 {
   "results": {
     "WTI": {
-      "price": 82.16,
-      "high": 83.05,
-      "low": 81.82,
+      "price": 83.17,
+      "high": 83.38,
+      "low": 81.39,
       "prevClose": 78.95,
       "name": "WTI Crude",
       "unit": "USD/bbl",
       "digits": 2
     },
     "BRENT": {
-      "price": 88.58,
-      "high": 89.41,
-      "low": 88.14,
+      "price": 89.79,
+      "high": 90.04,
+      "low": 87.88,
       "prevClose": 84.23,
       "name": "Brent Crude",
       "unit": "USD/bbl",
       "digits": 2
     },
     "COPPER": {
-      "price": 6.489,
-      "high": 6.498,
+      "price": 6.519,
+      "high": 6.531,
       "low": 6.328,
       "prevClose": 6.296,
       "name": "Copper",
       "unit": "USD/lb",
       "digits": 2
     },
-    "BTC": {
-      "price": 66161.12,
-      "high": 66129.74,
-      "low": 65138.832,
-      "prevClose": 63899.46,
-      "name": "Bitcoin",
-      "unit": "USD",
-      "digits": 0
-    },
     "EURUSD": {
-      "price": 1.1425,
-      "high": 1.143,
+      "price": 1.1427,
+      "high": 1.1431,
       "low": 1.1413,
       "prevClose": 1.1425,
       "name": "EUR/USD",
@@ -46,21 +37,12 @@
       "digits": 4
     },
     "DXY": {
-      "price": 100.902,
+      "price": 100.926,
       "high": 101.005,
       "low": 100.863,
       "prevClose": 100.73,
       "name": "DXY",
       "unit": "",
-      "digits": 2
-    },
-    "US10Y": {
-      "price": 4.598,
-      "high": 0,
-      "low": 0,
-      "prevClose": 4.585,
-      "name": "US 10Y",
-      "unit": "%",
       "digits": 2
     },
     "US3M": {
@@ -71,54 +53,43 @@
       "name": "US 3M",
       "unit": "%",
       "digits": 2
-    },
-    "_SPREAD": {
-      "value": 89.29999999999998,
-      "name": "10Y-3M Spread",
-      "unit": "bp"
     }
   },
   "prices": {
-    "WTI": 82.16,
-    "BRENT": 88.58,
-    "COPPER": 6.489,
-    "BTC": 66161.12,
-    "EURUSD": 1.1425,
-    "DXY": 100.902,
-    "US10Y": 4.598,
+    "WTI": 83.17,
+    "BRENT": 89.79,
+    "COPPER": 6.519,
+    "EURUSD": 1.1427,
+    "DXY": 100.926,
     "US3M": 3.705
   },
   "changes": {
     "WTI": {
-      "abs": 3.2099999999999937,
-      "pct": 4.065864471184286
+      "abs": 4.219999999999999,
+      "pct": 5.345155161494615
     },
     "BRENT": {
-      "abs": 4.349999999999994,
-      "pct": 5.1644307253947455
+      "abs": 5.560000000000002,
+      "pct": 6.600973524872375
     },
     "COPPER": {
-      "abs": 0.19299999999999962,
-      "pct": 3.065438373570515
+      "abs": 0.22299999999999986,
+      "pct": 3.5419313850063507
     },
-    "BTC": {
-      "abs": 2261.659999999996,
-      "pct": 3.5394039323649937
+    "EURUSD": {
+      "abs": 0.00019999999999997797,
+      "pct": 0.01750547045951667
     },
     "DXY": {
-      "abs": 0.17199999999999704,
-      "pct": 0.17075349945398297
-    },
-    "US10Y": {
-      "abs": 0.0129999999999999,
-      "pct": 0.2835332606324951
+      "abs": 0.19599999999999795,
+      "pct": 0.19457956914523772
     },
     "US3M": {
       "abs": 0.004999999999999893,
       "pct": 0.13513513513513226
     }
   },
-  "timestamp": "2026-07-21T07:53:06.583Z",
+  "timestamp": "2026-07-21T10:17:58.632Z",
   "fng": {
     "value": 25,
     "label": "Extreme Fear"
