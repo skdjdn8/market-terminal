@@ -738,16 +738,43 @@ body {
       <div class="font-mono text-[0.5rem] text-gray-600 mt-2">Token 仅存浏览器本地，不上传任何服务器。生成研报后自动发布到网站供所有人访问。</div>
     </div>
 
-    <!-- Controls -->
-    <div class="flex flex-wrap items-center gap-4 mb-8 frame-section-entry">
-      <button id="btn-generate-report"
-        class="px-6 py-3 rounded-sm font-mono text-xs tracking-widest transition-all duration-300
-               bg-[#e8c382] text-[#070707] hover:bg-[#f0d89c] font-semibold
-               disabled:opacity-50 disabled:cursor-not-allowed"
-        onclick="generateResearchReport()">
-        <span id="btn-report-text">⚡ 生成研报</span>
-      </button>
-      <span class="font-mono text-[0.55rem] tracking-wider text-gray-600" id="report-status">就绪 — 点击生成市场分析</span>
+    <!-- Controls: VIP-gated -->
+    <div class="frame-section-entry mb-8">
+      <!-- VIP Lock (shown when not VIP) -->
+      <div id="vip-lock" class="frame-section rounded-sm p-6 scanline-subtle">
+        <div class="flex items-center gap-3 mb-4">
+          <iconify-icon icon="solar:shield-star-linear" class="text-[#e8c382] text-2xl"></iconify-icon>
+          <div>
+            <div class="font-gloock text-xl text-[#e8c382]">VIP 专属功能</div>
+            <div class="font-mono text-[0.5rem] tracking-wider text-gray-500">AI 多 agent 研报 · 仅限会员使用</div>
+          </div>
+        </div>
+        <p class="font-manrope text-sm text-gray-400 mb-4">10 位 AI 分析师团队每日生成专业市场研报，覆盖宏观、能源、贵金属、技术面。输入 VIP 码解锁。</p>
+        <div class="flex items-center gap-3">
+          <input id="vip-code-input" type="text" placeholder="输入 VIP 码..."
+            class="flex-1 bg-transparent border border-white/10 rounded-sm px-4 py-2.5 font-mono text-sm text-white outline-none focus:border-[#e8c382] transition-colors"
+            onkeydown="if(event.key==='Enter')unlockVIP()">
+          <button onclick="unlockVIP()"
+            class="px-6 py-2.5 rounded-sm bg-[#e8c382] text-[#070707] font-mono text-xs tracking-widest font-semibold hover:bg-[#f0d89c] transition-colors">
+            🔓 解锁
+          </button>
+        </div>
+        <div class="font-mono text-[0.55rem] text-gray-600 mt-3" id="vip-msg"></div>
+      </div>
+
+      <!-- VIP Controls (shown when VIP) -->
+      <div id="vip-controls" class="hidden flex flex-wrap items-center gap-4">
+        <button id="btn-generate-report"
+          class="px-6 py-3 rounded-sm font-mono text-xs tracking-widest transition-all duration-300
+                 bg-[#e8c382] text-[#070707] hover:bg-[#f0d89c] font-semibold
+                 disabled:opacity-50 disabled:cursor-not-allowed"
+          onclick="generateResearchReport()">
+          <span id="btn-report-text">⚡ 生成研报</span>
+        </button>
+        <span class="font-mono text-[0.55rem] tracking-wider text-gray-600" id="report-status">就绪 — 点击生成市场分析</span>
+        <span class="font-mono text-[0.5rem] text-[#e8c382] ml-auto">👑 VIP</span>
+        <a href="javascript:logoutVIP()" class="font-mono text-[0.5rem] text-gray-600 hover:text-white">退出</a>
+      </div>
     </div>
 
     <!-- Prediction Tracker — WTI + Gold forecast vs actual -->
@@ -857,7 +884,7 @@ body {
       <div class="header-logo w-8 h-8 flex items-center justify-center rounded-sm select-none" style="border: 1px solid rgba(255,255,255,0.08);">
         <span class="font-gloock text-sm text-gradient-gold leading-none">VL</span>
       </div>
-      <span class="font-mono text-[0.55rem] tracking-[0.15em] text-gray-600">MARKET TERMINAL v2.4 · REV 2026-07-14</span>
+      <span class="font-mono text-[0.55rem] tracking-[0.15em] text-gray-600">MARKET TERMINAL v2.4 · <a href="javascript:openVIPAdmin()" class="hover:text-[#e8c382] transition-colors">VIP管理</a></span>
     </div>
     <div class="flex gap-6 text-[0.55rem] font-mono tracking-wider text-gray-600">
       <span>数据延迟: ≤15min</span>
@@ -1989,6 +2016,74 @@ async function generateResearchReport() {
 }
 
 const SEARCH_SYSTEM = `你是金融信息搜索分析师。你的任务是根据市场数据推断可能的驱动事件。只列出高置信度的推断，推测项必须标注。`;
+
+// ═══════════════════════════════════════════
+// VIP ACCESS CONTROL
+// ═══════════════════════════════════════════
+const DEFAULT_VIP_CODES = ['VIP2026', 'MARKET01', 'GOLD2026'];
+const ADMIN_PASSWORD = 'admin888';
+
+function getVIPCodes() {
+  try { return JSON.parse(localStorage.getItem('vip_codes') || 'null') || DEFAULT_VIP_CODES; }
+  catch { return DEFAULT_VIP_CODES; }
+}
+
+function isVIP() {
+  return localStorage.getItem('vip_unlocked') === 'true';
+}
+
+function unlockVIP() {
+  const input = document.getElementById('vip-code-input');
+  const msg = document.getElementById('vip-msg');
+  const code = input.value.trim().toUpperCase();
+  if (!code) { msg.textContent = '请输入 VIP 码'; msg.style.color = '#e61919'; return; }
+
+  const codes = getVIPCodes();
+  if (codes.includes(code)) {
+    localStorage.setItem('vip_unlocked', 'true');
+    updateVIPUI();
+    msg.textContent = '';
+  } else {
+    msg.textContent = 'VIP 码无效，请重试';
+    msg.style.color = '#e61919';
+    input.value = '';
+  }
+}
+
+function logoutVIP() {
+  if (confirm('退出 VIP？')) {
+    localStorage.removeItem('vip_unlocked');
+    updateVIPUI();
+  }
+}
+
+function updateVIPUI() {
+  const lock = document.getElementById('vip-lock');
+  const controls = document.getElementById('vip-controls');
+  if (isVIP()) {
+    if (lock) lock.classList.add('hidden');
+    if (controls) controls.classList.remove('hidden');
+  } else {
+    if (lock) lock.classList.remove('hidden');
+    if (controls) controls.classList.add('hidden');
+  }
+}
+
+// Admin: manage VIP codes
+function openVIPAdmin() {
+  const pw = prompt('管理员密码:');
+  if (pw !== ADMIN_PASSWORD) { alert('密码错误'); return; }
+  const codes = getVIPCodes();
+  const newCodes = prompt('当前 VIP 码列表（每行一个，可增删改）:', codes.join('\n'));
+  if (newCodes === null) return;
+  const list = newCodes.split('\n').map(s => s.trim().toUpperCase()).filter(Boolean);
+  localStorage.setItem('vip_codes', JSON.stringify(list));
+  alert('已保存 ' + list.length + ' 个 VIP 码');
+}
+
+// Init
+updateVIPUI();
+
 
 // ═══════════════════════════════════════════
 // NOTES / PORTFOLIO CMS — Supabase Backend
