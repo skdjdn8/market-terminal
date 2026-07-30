@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>价值投资研究台 · Value Research Desk</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{fontFamily:{gloock:['Gloock','serif'],bebas:['Bebas Neue','sans-serif'],manrope:['Manrope','sans-serif'],mono:['JetBrains Mono','monospace']}}}}}</script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Gloock&family=JetBrains+Mono:wght@400;600&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="apikeys.js"></script>
+<style>
+*{box-sizing:border-box}body{background:#070707;color:#eaeaea;font-family:'Manrope',sans-serif;overflow-x:hidden}
+::selection{background:#e8c382;color:#351e10}
+::-webkit-scrollbar{width:.5rem}::-webkit-scrollbar-track{background:#070707}::-webkit-scrollbar-thumb{background:#333}::-webkit-scrollbar-thumb:hover{background:#e8c382}
+.frame-section{position:relative;background:linear-gradient(135deg,rgba(255,255,255,.03) 0%,rgba(255,255,255,.01) 50%,rgba(255,255,255,.02) 100%);border:1px solid rgba(255,255,255,.05);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),inset 0 -1px 0 rgba(0,0,0,.3),0 4px 24px rgba(0,0,0,.4)}
+.text-gradient-gold{background:linear-gradient(135deg,#e8c382 0%,#c8943e 50%,#f0d89c 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.data-card{transition:all .4s cubic-bezier(.16,1,.3,1)}.data-card:hover{border-color:rgba(232,195,130,.3)}
+.header-logo{background:linear-gradient(180deg,#1a1a1a 0%,#0a0a0a 100%);box-shadow:0 2px 0 rgba(255,255,255,.06),0 -1px 0 rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.05)}
+</style>
+</head>
+<body class="antialiased">
+
+<!-- Header -->
+<header class="fixed top-0 left-0 right-0 z-20 backdrop-blur-xl" style="background:rgba(7,7,7,.85);border-bottom:1px solid rgba(255,255,255,.06)">
+  <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="header-logo w-10 h-10 flex items-center justify-center rounded-sm border border-white/10 select-none"><span class="font-gloock text-lg text-gradient-gold">VR</span></div>
+      <div class="hidden sm:block"><div class="font-mono text-xs tracking-widest text-gray-400">VALUE</div><div class="font-bebas text-sm tracking-wider text-[#e8c382] -mt-0.5">RESEARCH</div></div>
+    </div>
+    <nav class="hidden md:flex items-center gap-8">
+      <a href="#analyze" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382]">// 分析</a>
+      <a href="#reading" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382]">// 阅读</a>
+      <a href="#company" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382]">// 估值</a>
+      <a href="#outlook" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382]">// 展望</a>
+      <a href="#notes" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382]">// 随笔</a>
+    </nav>
+  </div>
+</header>
+
+<main class="relative z-10 pt-16">
+
+<!-- ═══════════════════════════════════ HERO ═══════════════════════════════════ -->
+<section class="min-h-[70vh] flex items-center">
+  <div class="max-w-7xl mx-auto px-6 w-full">
+    <div class="max-w-3xl">
+      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-sm border border-[#e8c382]/20 bg-[#e8c382]/5 mb-8">
+        <span class="w-1.5 h-1.5 rounded-full bg-[#e8c382] animate-pulse"></span>
+        <span class="font-mono text-[0.65rem] tracking-[0.15em] text-[#e8c382]">VALUE RESEARCH DESK v3.0</span>
+      </div>
+      <h1 class="font-gloock text-5xl md:text-8xl leading-[0.9] text-white mb-6">
+        价值投资<br><span class="text-gradient-gold">研究终端</span>
+      </h1>
+      <p class="font-manrope text-sm text-gray-500 max-w-xl leading-relaxed mb-8">
+        收集优质文章 → 判断信息可信度 → 深度分析公司 → 提炼投资洞见。不追逐短期价格，专注长期价值。
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ SECTION 1: ARTICLE ANALYZER ═══════════════════════════════════ -->
+<section id="analyze" class="py-20 border-t border-white/[0.03]">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="mb-10"><div class="font-mono text-[0.65rem] tracking-[0.2em] text-[#e8c382] mb-3">// SECTION_01</div>
+      <h2 class="font-gloock text-4xl md:text-6xl text-white">资料分析<span class="text-gradient-gold"> ANALYZE</span></h2>
+      <p class="font-manrope text-sm text-gray-500 mt-3">输入文章链接或粘贴文本 — AI 判断可信度、提取论点、标注偏见</p></div>
+
+    <div class="frame-section rounded-sm p-6 scanline-subtle mb-6">
+      <textarea id="article-input" placeholder="粘贴文章链接或全文内容..." rows="5"
+        class="w-full bg-transparent border border-white/10 rounded-sm p-4 font-manrope text-sm text-white outline-none focus:border-[#e8c382] resize-none placeholder-gray-700"></textarea>
+      <div class="flex items-center gap-3 mt-3">
+        <button onclick="analyzeArticle()" id="btn-analyze"
+          class="px-5 py-2.5 rounded-sm bg-[#e8c382] text-[#070707] font-mono text-xs tracking-widest font-semibold hover:bg-[#f0d89c] disabled:opacity-50">
+          🔍 分析可信度
+        </button>
+        <button onclick="saveToReadingList()" id="btn-save-reading" class="hidden px-4 py-2.5 rounded-sm border border-white/10 font-mono text-xs tracking-wider text-gray-400 hover:text-white">📚 收藏到阅读库</button>
+        <span id="analyze-status" class="font-mono text-[0.55rem] text-gray-600"></span>
+      </div>
+    </div>
+    <div id="analyze-result" class="hidden frame-section rounded-sm p-6"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ SECTION 2: READING LIST ═══════════════════════════════════ -->
+<section id="reading" class="py-20 border-t border-white/[0.03]">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="mb-10"><div class="font-mono text-[0.65rem] tracking-[0.2em] text-[#e8c382] mb-3">// SECTION_02</div>
+      <h2 class="font-gloock text-4xl md:text-6xl text-white">精选阅读<span class="text-gradient-gold"> READING</span></h2></div>
+
+    <!-- Category filter -->
+    <div class="flex flex-wrap gap-2 mb-6" id="reading-cats"></div>
+    <!-- Articles grid -->
+    <div id="reading-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ SECTION 3: COMPANY ANALYSIS ═══════════════════════════════════ -->
+<section id="company" class="py-20 border-t border-white/[0.03]">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="mb-10"><div class="font-mono text-[0.65rem] tracking-[0.2em] text-[#e8c382] mb-3">// SECTION_03</div>
+      <h2 class="font-gloock text-4xl md:text-6xl text-white">公司估值<span class="text-gradient-gold"> VALUATION</span></h2>
+      <p class="font-manrope text-sm text-gray-500 mt-3">基于价值投资框架 — 护城河 + 财务健康 + 安全边际</p></div>
+
+    <div class="frame-section rounded-sm p-6 scanline-subtle mb-6">
+      <div class="flex flex-wrap gap-4">
+        <input id="company-input" placeholder="公司名称或股票代码 (如 AAPL, 贵州茅台)"
+          class="flex-1 min-w-[200px] bg-transparent border border-white/10 rounded-sm px-4 py-3 font-manrope text-sm text-white outline-none focus:border-[#e8c382] placeholder-gray-700">
+        <button onclick="analyzeCompany()" id="btn-company"
+          class="px-5 py-3 rounded-sm bg-[#e8c382] text-[#070707] font-mono text-xs tracking-widest font-semibold hover:bg-[#f0d89c] disabled:opacity-50">
+          💎 深度分析
+        </button>
+      </div>
+      <span id="company-status" class="font-mono text-[0.55rem] text-gray-600 mt-2 inline-block"></span>
+    </div>
+    <div id="company-result" class="hidden frame-section rounded-sm p-6"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ SECTION 4: OUTLOOK ═══════════════════════════════════ -->
+<section id="outlook" class="py-20 border-t border-white/[0.03]">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="mb-10"><div class="font-mono text-[0.65rem] tracking-[0.2em] text-[#e8c382] mb-3">// SECTION_04</div>
+      <h2 class="font-gloock text-4xl md:text-6xl text-white">展望预测<span class="text-gradient-gold"> OUTLOOK</span></h2></div>
+
+    <!-- VIP Gate -->
+    <div id="vip-lock" class="frame-section rounded-sm p-6 scanline-subtle mb-6">
+      <div class="flex items-center gap-3 mb-4">
+        <iconify-icon icon="solar:shield-star-linear" class="text-[#e8c382] text-2xl"></iconify-icon>
+        <div><div class="font-gloock text-xl text-[#e8c382]">VIP 专属功能</div></div>
+      </div>
+      <div class="flex items-center gap-3"><input id="vip-code-input" type="text" placeholder="输入 VIP 码..." class="flex-1 bg-transparent border border-white/10 rounded-sm px-4 py-2.5 font-mono text-sm text-white outline-none focus:border-[#e8c382]" onkeydown="if(event.key==='Enter')unlockVIP()"><button onclick="unlockVIP()" class="px-6 py-2.5 rounded-sm bg-[#e8c382] text-[#070707] font-mono text-xs tracking-widest font-semibold">🔓 解锁</button></div>
+      <div class="font-mono text-[0.55rem] text-gray-600 mt-3" id="vip-msg"></div>
+    </div>
+    <div id="vip-controls" class="hidden">
+      <button onclick="generateOutlook()" id="btn-outlook" class="px-5 py-2.5 rounded-sm bg-[#e8c382] text-[#070707] font-mono text-xs tracking-widest font-semibold hover:bg-[#f0d89c] mb-6">📊 生成展望报告</button>
+      <div id="outlook-result" class="frame-section rounded-sm p-6"></div>
+      <span class="font-mono text-[0.5rem] text-gray-600 mt-2 inline-block">👑 VIP · <a href="javascript:logoutVIP()" class="hover:text-white">退出</a></span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ SECTION 5: NOTES ═══════════════════════════════════ -->
+<section id="notes" class="py-20 border-t border-white/[0.03]">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="mb-10"><div class="font-mono text-[0.65rem] tracking-[0.2em] text-[#e8c382] mb-3">// SECTION_05</div>
+      <h2 class="font-gloock text-4xl md:text-6xl text-white">随笔<span class="text-gradient-gold"> NOTES</span></h2></div>
+    <button onclick="openNoteEditor()" class="px-5 py-2.5 rounded-sm bg-[#e8c382] text-[#070707] font-mono text-xs tracking-widest font-semibold mb-6">✏️ 新建随笔</button>
+    <div id="note-editor" class="hidden frame-section rounded-sm p-6 mb-6">
+      <input id="note-title-input" placeholder="标题..." class="w-full bg-transparent border-b border-white/10 pb-3 mb-4 font-gloock text-2xl text-white outline-none placeholder-gray-700">
+      <textarea id="note-content-input" placeholder="正文..." rows="8" class="w-full bg-transparent border-none outline-none font-manrope text-sm text-gray-300 placeholder-gray-700 resize-none"></textarea>
+      <div class="flex gap-3 mt-4 pt-4 border-t border-white/10">
+        <button onclick="saveNote()" class="px-4 py-2 rounded-sm bg-[#4af626] text-[#070707] font-mono text-xs font-semibold">💾 发布</button>
+        <button onclick="document.getElementById('note-editor').classList.add('hidden')" class="px-4 py-2 rounded-sm border border-white/10 font-mono text-xs text-gray-400">取消</button>
+      </div>
+    </div>
+    <div id="notes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    <span class="font-mono text-[0.5rem] text-gray-600 mt-4 inline-block"><a href="javascript:openVIPAdmin()" class="hover:text-white">VIP管理</a></span>
+  </div>
+</section>
+
+</main>
+
+<!-- ═══════════════════════════════════ SCRIPTS ═══════════════════════════════════ -->
+<script>
+const SUPABASE_URL = 'https://kjdbxsirpkuyoojnsgtv.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_wniWhWzgN5WRFLdI0hkgwA__hmbe95V';
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const DSKEY = (window.API_KEYS && window.API_KEYS.DEEPSEEK) || '';
+
+async function callDS(system, user, temp=0.3) {
+  const r = await fetch('https://api.deepseek.com/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${DSKEY}`},body:JSON.stringify({model:'deepseek-chat',temperature:temp,max_tokens:2048,messages:[{role:'system',content:system},{role:'user',content:user}]})});
+  if(!r.ok) throw new Error(`DS ${r.status}`);
+  return (await r.json()).choices[0].message.content;
+}
+
+function renderMD(md) {
+  let h = md.replace(/^### (.+)$/gm,'<h3 class="font-bebas text-lg text-white mt-6 mb-2">$1</h3>');
+  h = h.replace(/^## (.+)$/gm,'<h2 class="font-gloock text-xl text-[#e8c382] mt-8 mb-3 border-b border-white/10 pb-2">$1</h2>');
+  h = h.replace(/\*\*(.+?)\*\*/g,'<strong class="text-white font-semibold">$1</strong>');
+  h = h.replace(/\n\n/g,'</p><p class="mb-3">');
+  h = h.replace(/^- (.+)$/gm,'<li class="text-gray-400 ml-4">$1</li>');
+  return '<p class="mb-3">'+h+'</p>';
+}
+</script>
+
+<!-- ── ARTICLE ANALYZER ── -->
+<script>
+let lastAnalysis = null;
+
+async function analyzeArticle() {
+  const input = document.getElementById('article-input').value.trim();
+  if (!input) return;
+  const btn = document.getElementById('btn-analyze');
+  const status = document.getElementById('analyze-status');
+  const result = document.getElementById('analyze-result');
+  btn.disabled = true; status.textContent = '分析中...';
+  result.classList.remove('hidden');
+  result.innerHTML = '<div class="animate-pulse text-[#e8c382] font-mono text-sm py-8">DeepSeek 分析中...</div>';
+
+  try {
+    const prompt = `请分析以下文章/文本，输出结构化评估：
+
+## 📋 核心论点
+[用2-3句话概括文章核心观点]
+
+## 🎯 可信度评分
+- 事实依据: [1-10] — [说明：引用了哪些数据/来源？]
+- 逻辑严密性: [1-10] — [说明：推理过程是否存在跳跃？]
+- 偏见检测: [1-10分，10=最客观] — [说明：是否存在选择性引用、情绪化表述、利益相关？]
+- 综合评分: [1-10]
+
+## ⚠️ 红旗标注
+[列出文章中值得警惕的表述、逻辑漏洞、或数据操纵迹象。如无则写"未发现明显问题"]
+
+## 💡 关键洞见
+[这篇文章最有价值的3个观点]
+
+## 📚 延伸阅读建议
+[推荐2-3篇相关主题的高质量文章或书籍]
+
+文章内容：
+${input.slice(0, 6000)}`;
+
+    const res = await callDS('你是一位资深研究分析师，擅长评估信息可信度、识别偏见、提炼核心论点。用中文回复，结构清晰。', prompt);
+    result.innerHTML = `<div class="prose prose-invert max-w-none font-manrope text-sm leading-relaxed text-gray-300">${renderMD(res)}</div>`;
+    lastAnalysis = { text: input.slice(0, 500), analysis: res };
+    document.getElementById('btn-save-reading').classList.remove('hidden');
+    status.textContent = '✅ 分析完成';
+  } catch(e) { result.innerHTML = `<div class="text-[#e61919]">${e.message}</div>`; status.textContent = '❌ 失败'; }
+  finally { btn.disabled = false; }
+}
+
+async function saveToReadingList() {
+  if (!lastAnalysis) return;
+  const title = lastAnalysis.text.slice(0, 80).replace(/\n/g,' ');
+  await db.from('reading_list').insert({id:Date.now(),title,url:'',category:'用户提交',summary:lastAnalysis.analysis.slice(0,500),notes:'',rating:0});
+  document.getElementById('btn-save-reading').textContent = '✅ 已收藏';
+  loadReadingList();
+}
+</script>
+
+<!-- ── READING LIST ── -->
+<script>
+async function loadReadingList() {
+  const grid = document.getElementById('reading-grid');
+  const cats = document.getElementById('reading-cats');
+  const { data } = await db.from('reading_list').select('*').order('created_at',{ascending:false});
+  if (!data || data.length === 0) { grid.innerHTML = '<div class="col-span-full text-center py-12 text-gray-600 font-mono text-sm">暂无文章</div>'; return; }
+
+  const categories = [...new Set(data.map(d=>d.category||'未分类'))];
+  cats.innerHTML = categories.map(c=>`<button onclick="filterReading('${c}')" class="px-3 py-1 rounded-sm border border-white/10 font-mono text-[0.55rem] text-gray-400 hover:text-[#e8c382] hover:border-[#e8c382]/30 transition-colors">${c}</button>`).join('');
+
+  renderReadingCards(data);
+}
+
+function renderReadingCards(data) {
+  const grid = document.getElementById('reading-grid');
+  grid.innerHTML = data.map(d=>`
+    <div class="data-card frame-section rounded-sm p-5 relative overflow-hidden group">
+      <div class="font-mono text-[0.5rem] tracking-[0.1em] text-gray-600 mb-2">${d.category||'未分类'} · ${new Date(d.created_at).toLocaleDateString('zh-CN')}</div>
+      <div class="font-gloock text-lg text-white mb-2">${escapeHtml(d.title)}</div>
+      <div class="font-manrope text-xs text-gray-500 line-clamp-3">${escapeHtml((d.summary||'').slice(0,200))}</div>
+      ${d.url?`<a href="${d.url}" target="_blank" class="font-mono text-[0.55rem] text-[#e8c382] mt-2 inline-block hover:underline">原文链接 →</a>`:''}
+      <div class="flex gap-2 mt-3 pt-3 border-t border-white/5 opacity-0 group-hover:opacity-100 transition-opacity">
+        <button onclick="deleteReading(${d.id})" class="font-mono text-[0.5rem] text-gray-500 hover:text-[#e61919]">删除</button>
+      </div>
+    </div>`).join('');
+}
+
+function filterReading(cat) { db.from('reading_list').select('*').eq('category',cat).order('created_at',{ascending:false}).then(({data})=>renderReadingCards(data||[])); }
+
+async function deleteReading(id) { if(confirm('删除？')){await db.from('reading_list').delete().eq('id',id);loadReadingList();} }
+
+function escapeHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+
+loadReadingList();
+</script>
+
+<!-- ── COMPANY ANALYSIS ── -->
+<script>
+async function analyzeCompany() {
+  const name = document.getElementById('company-input').value.trim();
+  if (!name) return;
+  const btn = document.getElementById('btn-company');
+  const status = document.getElementById('company-status');
+  const result = document.getElementById('company-result');
+  btn.disabled = true; status.textContent = '获取财务数据 + 价值投资分析中 (约30秒)...';
+  result.classList.remove('hidden');
+  result.innerHTML = '<div class="animate-pulse text-[#e8c382] font-mono text-sm py-8">正在分析...</div>';
+
+  try {
+    // Fetch financial data from Yahoo
+    let finData = '无法获取实时财务数据，请基于公开信息和价值投资框架进行分析。';
+    try {
+      const r = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(name)}?interval=1d&range=1y`);
+      const j = await r.json();
+      const m = j?.chart?.result?.[0]?.meta;
+      if (m) finData = `当前价格: $${m.regularMarketPrice} | 52周高: $${m.fiftyTwoWeekHigh} | 52周低: $${m.fiftyTwoWeekLow} | 前收盘: $${m.previousClose}`;
+    } catch {}
+
+    const prompt = `请用价值投资框架分析：**${name}**
+
+可用财务数据：${finData}
+
+请从以下维度分析：
+## 🏰 护城河分析
+[品牌、转换成本、网络效应、成本优势 — 这个公司有没有持久竞争优势？]
+
+## 📊 财务健康
+[从公开信息判断：ROIC是否持续>15%？负债率？自由现金流质量？]
+
+## 💰 估值判断
+[当前价格相对历史区间处于什么位置？用PE/PB/FCF yield判断贵不贵]
+
+## ⚠️ 风险与红旗
+[应收异常？关联交易？管理层问题？行业逆风？]
+
+## 🎯 安全边际
+[跌到什么价位开始有安全边际？为什么？]
+
+## 📈 综合评分
+[1-10分，分别从护城河、财务、估值、管理层四个维度评分]
+
+格式：结构清晰的专业投资研报，中文。不确定处标注[推测]。`;
+
+    const res = await callDS('你是资深价值投资者，精通巴菲特、芒格、格雷厄姆的投资框架。你善于从公开信息中识别护城河、判断财务质量、评估安全边际。', prompt);
+    result.innerHTML = `<div class="prose prose-invert max-w-none font-manrope text-sm leading-relaxed text-gray-300">${renderMD(res)}</div>`;
+
+    // Save to DB
+    const scoreMatch = res.match(/综合评分[：:]\s*(\d+)/);
+    await db.from('company_analyses').insert({id:Date.now(),company_name:name,analysis:res,score:scoreMatch?parseInt(scoreMatch[1]):null,buy_range:'',risks:''});
+    status.textContent = '✅ 分析完成 · 已保存';
+  } catch(e) { result.innerHTML = `<div class="text-[#e61919]">${e.message}</div>`; status.textContent = '❌ 失败'; }
+  finally { btn.disabled = false; }
+}
+</script>
+
+<!-- ── OUTLOOK / VIP ── -->
+<script>
+const VIP_CODES = ['VIP2026','MARKET01','GOLD2026'];
+function isVIP(){return localStorage.getItem('vip_unlocked')==='true';}
+function unlockVIP(){
+  const code = document.getElementById('vip-code-input').value.trim().toUpperCase();
+  if(VIP_CODES.includes(code)){localStorage.setItem('vip_unlocked','true');updateVIPUI();}
+  else{document.getElementById('vip-msg').textContent='无效VIP码';document.getElementById('vip-msg').style.color='#e61919';}
+}
+function logoutVIP(){localStorage.removeItem('vip_unlocked');updateVIPUI();}
+function updateVIPUI(){
+  if(isVIP()){document.getElementById('vip-lock').classList.add('hidden');document.getElementById('vip-controls').classList.remove('hidden');}
+  else{document.getElementById('vip-lock').classList.remove('hidden');document.getElementById('vip-controls').classList.add('hidden');}
+}
+function openVIPAdmin(){
+  const pw=prompt('管理密码:');if(pw!=='admin888')return;
+  const codes=prompt('VIP码列表（每行一个）:',VIP_CODES.join('\n'));
+  if(codes) alert('已更新 '+codes.split('\n').filter(Boolean).length+' 个码');
+}
+
+async function generateOutlook() {
+  const btn = document.getElementById('btn-outlook');
+  const result = document.getElementById('outlook-result');
+  btn.disabled = true; result.innerHTML = '<div class="animate-pulse text-[#e8c382] font-mono text-sm py-8">生成多agent展望报告...</div>';
+
+  const prompt = `请基于当前宏观经济环境（2026年中期），结合价值投资理念，撰写一份未来6-12个月的市场展望报告。
+
+## 宏观环境
+[利率、通胀、地缘政治的核心判断]
+
+## 资产配置建议
+[按照价值投资逻辑：哪些资产类别被低估？哪些被高估？]
+
+## 行业机会
+[3-5个值得深入研究的行业，说明为什么]
+
+## 风险警告
+[最可能出错的3个地方]
+
+## 投资格言
+[引用一句巴菲特/芒格的名言作为结尾]
+
+输出中文，专业研报格式。`;
+
+  try {
+    const res = await callDS('你是资深宏观策略师，坚持价值投资理念。你的判断永远基于基本面，不追逐短期市场情绪。', prompt);
+    result.innerHTML = `<div class="prose prose-invert max-w-none font-manrope text-sm leading-relaxed text-gray-300">${renderMD(res)}</div>`;
+  } catch(e) { result.innerHTML = `<div class="text-[#e61919]">${e.message}</div>`; }
+  finally { btn.disabled = false; }
+}
+
+updateVIPUI();
+</script>
+
+<!-- ── NOTES ── -->
+<script>
+let editingId=null;
+async function renderNotes(){
+  const grid=document.getElementById('notes-grid');
+  const {data}=await db.from('notes').select('*').order('created_at',{ascending:false});
+  if(!data||!data.length){grid.innerHTML='<div class="col-span-full text-center py-12 text-gray-600 font-mono text-sm">暂无随笔</div>';return;}
+  grid.innerHTML=data.map(n=>`<div class="data-card frame-section rounded-sm p-5 group">
+    <div class="font-mono text-[0.5rem] text-gray-600 mb-2">${new Date(n.created_at).toLocaleString('zh-CN')}</div>
+    <div class="font-gloock text-xl text-white mb-3">${escapeHtml(n.title||'')}</div>
+    <div class="font-manrope text-sm text-gray-400 whitespace-pre-wrap">${escapeHtml((n.content||'').slice(0,300))}</div>
+    <div class="flex gap-2 mt-3 pt-3 border-t border-white/5 opacity-0 group-hover:opacity-100 transition-opacity">
+      <button onclick="editNote(${n.id})" class="font-mono text-[0.5rem] text-gray-500 hover:text-[#e8c382]">编辑</button>
+      <button onclick="deleteNote(${n.id})" class="font-mono text-[0.5rem] text-gray-500 hover:text-[#e61919]">删除</button></div></div>`).join('');
+}
+function openNoteEditor(id){
+  document.getElementById('note-editor').classList.remove('hidden');
+  editingId=id||null;
+  if(!id){document.getElementById('note-title-input').value='';document.getElementById('note-content-input').value='';}
+  else{db.from('notes').select('*').eq('id',id).single().then(({data})=>{if(data){document.getElementById('note-title-input').value=data.title;document.getElementById('note-content-input').value=data.content;}});}
+}
+async function saveNote(){
+  const title=document.getElementById('note-title-input').value.trim();
+  const content=document.getElementById('note-content-input').value.trim();
+  if(!title&&!content)return;
+  if(editingId){await db.from('notes').update({title,content,edited_at:new Date().toISOString()}).eq('id',editingId);}
+  else{await db.from('notes').insert({id:Date.now(),title,content});}
+  document.getElementById('note-editor').classList.add('hidden');renderNotes();
+}
+async function editNote(id){openNoteEditor(id);}
+async function deleteNote(id){if(confirm('删除？')){await db.from('notes').delete().eq('id',id);renderNotes();}}
+renderNotes();
+</script>
+
+</body>
+</html>
