@@ -164,7 +164,10 @@
         <span class="text-gray-600 text-xs">用途：快速判断一篇市场分析文章是否值得认真阅读</span>
       </p></div>
 
-    <div class="frame-section rounded-sm p-6 scanline-subtle mb-6">
+    <div class="frame-section rounded-sm p-6 scanline-subtle mb-6 relative">
+      <div id="lock-analyze" class="vip-lock-overlay absolute inset-0 z-10 flex items-center justify-center rounded-sm" style="background:rgba(7,7,7,.9)">
+        <div class="text-center"><iconify-icon icon="solar:lock-linear" class="text-4xl text-[#e8c382] mb-2"></iconify-icon><div class="font-mono text-sm text-gray-400 mb-1">VIP 专属功能</div><div class="font-manrope text-xs text-gray-600"><a href="#vip" class="text-[#e8c382] hover:underline">开通VIP</a> 或 <a href="javascript:showAuthModal('login')" class="text-[#e8c382] hover:underline">登录</a></div></div>
+      </div>
       <textarea id="article-input" placeholder="粘贴文章链接或全文内容..." rows="5"
         class="w-full bg-transparent border border-white/10 rounded-sm p-4 font-manrope text-sm text-white outline-none focus:border-[#e8c382] resize-none placeholder-gray-700"></textarea>
       <div class="flex items-center gap-3 mt-3">
@@ -203,7 +206,10 @@
         <span class="text-gray-600 text-xs">用途：基于公开财报对一家公司进行专业基本面分析，不关注短期股价波动</span>
       </p></div>
 
-    <div class="frame-section rounded-sm p-6 scanline-subtle mb-6">
+    <div class="frame-section rounded-sm p-6 scanline-subtle mb-6 relative">
+      <div id="lock-company" class="vip-lock-overlay absolute inset-0 z-10 flex items-center justify-center rounded-sm" style="background:rgba(7,7,7,.9)">
+        <div class="text-center"><iconify-icon icon="solar:lock-linear" class="text-4xl text-[#e8c382] mb-2"></iconify-icon><div class="font-mono text-sm text-gray-400 mb-1">VIP 专属功能</div><div class="font-manrope text-xs text-gray-600"><a href="#vip" class="text-[#e8c382] hover:underline">开通VIP</a> 或 <a href="javascript:showAuthModal('login')" class="text-[#e8c382] hover:underline">登录</a></div></div>
+      </div>
       <div class="flex flex-wrap gap-4">
         <input id="company-input" placeholder="公司名称 (如 贵州茅台、Apple、台积电、ASML)"
           class="flex-1 min-w-[200px] bg-transparent border border-white/10 rounded-sm px-4 py-3 font-manrope text-sm text-white outline-none focus:border-[#e8c382] placeholder-gray-700">
@@ -239,7 +245,10 @@
     </div>
 
     <!-- Custom input -->
-    <div class="frame-section rounded-sm p-6 scanline-subtle mb-6">
+    <div class="frame-section rounded-sm p-6 scanline-subtle mb-6 relative">
+      <div id="lock-history" class="vip-lock-overlay absolute inset-0 z-10 flex items-center justify-center rounded-sm" style="background:rgba(7,7,7,.9)">
+        <div class="text-center"><iconify-icon icon="solar:lock-linear" class="text-4xl text-[#e8c382] mb-2"></iconify-icon><div class="font-mono text-sm text-gray-400 mb-1">VIP 专属功能</div><div class="font-manrope text-xs text-gray-600"><a href="#vip" class="text-[#e8c382] hover:underline">开通VIP</a> 或 <a href="javascript:showAuthModal('login')" class="text-[#e8c382] hover:underline">登录</a></div></div>
+      </div>
       <div class="flex gap-3 mb-3">
         <input id="history-input" placeholder="自定义事件，如：2022年英国养老金危机..."
           class="flex-1 bg-transparent border border-white/10 rounded-sm px-4 py-3 font-manrope text-sm text-white outline-none focus:border-[#e8c382] placeholder-gray-700">
