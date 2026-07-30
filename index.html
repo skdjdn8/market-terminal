@@ -346,40 +346,6 @@ body {
           实时监测全球金融市场动态。覆盖大宗商品、贵金属及主要股指，通过算法引擎提供多维度数据可视化，辅助决策判断。
         </p>
 
-        <!-- Dual KPI Grid -->
-        <div class="grid grid-cols-2 gap-4">
-          <div class="frame-section p-4 rounded-sm">
-            <div class="font-mono text-[0.6rem] tracking-[0.15em] text-gray-500 mb-1">EUR/USD 欧元</div>
-            <div class="font-bebas text-4xl tracking-tight text-white" id="kpi-eurusd">--</div>
-            <div class="font-mono text-xs mt-1" id="kpi-eurusd-change">--</div>
-          </div>
-          <div class="frame-section p-4 rounded-sm">
-            <div class="font-mono text-[0.6rem] tracking-[0.15em] text-gray-500 mb-1">DXY 美元指数</div>
-            <div class="font-bebas text-4xl tracking-tight text-white" id="kpi-dxy">--</div>
-            <div class="font-mono text-xs mt-1" id="kpi-dxy-change">--</div>
-          </div>
-          <div class="frame-section p-4 rounded-sm">
-            <div class="font-mono text-[0.6rem] tracking-[0.15em] text-gray-500 mb-1">US10Y 美债收益率</div>
-            <div class="font-bebas text-4xl tracking-tight text-white" id="kpi-us10y">--</div>
-            <div class="font-mono text-xs mt-1" id="kpi-us10y-change">--</div>
-          </div>
-          <div class="frame-section p-4 rounded-sm">
-            <div class="font-mono text-[0.6rem] tracking-[0.15em] text-gray-500 mb-1">BTC 比特币</div>
-            <div class="font-bebas text-4xl tracking-tight text-white" id="kpi-btc">--</div>
-            <div class="font-mono text-xs mt-1" id="kpi-btc-change">--</div>
-          </div>
-        </div>
-
-        <!-- Operator Avatar Stack (symbolic: market participants) -->
-        <div class="flex items-center gap-4">
-          <div class="flex -space-x-3">
-            <div class="w-10 h-10 rounded-full border-2 border-[#070707] bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center font-mono text-[0.55rem] text-white font-bold">NY</div>
-            <div class="w-10 h-10 rounded-full border-2 border-[#070707] bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-mono text-[0.55rem] text-white font-bold">LN</div>
-            <div class="w-10 h-10 rounded-full border-2 border-[#070707] bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center font-mono text-[0.55rem] text-white font-bold">HK</div>
-            <div class="w-10 h-10 rounded-full border-2 border-[#070707] bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center font-mono text-[0.55rem] text-white font-bold">TK</div>
-          </div>
-          <span class="font-mono text-[0.6rem] tracking-wider text-gray-600">4 大市场 · 数据同步中</span>
-        </div>
       </div>
 
       <!-- RIGHT COLUMN: Three.js Wireframe Globe -->
@@ -1470,16 +1436,7 @@ function updateUI() {
     stripEl.innerHTML = items.join('') + items.join('');
   }
 
-  // KPI cards
-  ['EURUSD','DXY','US10Y','BTC'].forEach(k => {
-    const p = engine.getPrice(k);
-    const ch = engine.getChange(k);
-    const chp = engine.getChangePercent(k);
-    const priceEl = document.getElementById(`kpi-${k.toLowerCase()}`);
-    const changeEl = document.getElementById(`kpi-${k.toLowerCase()}-change`);
-    if (priceEl) priceEl.textContent = fmtPrice(k, p);
-    if (changeEl) changeEl.innerHTML = fmtChange(ch, chp, k);
-  });
+  // KPI cards removed — using TradingView charts
 
   // Commodities
   // Commodities & metals now served by TradingView charts — no local update needed
