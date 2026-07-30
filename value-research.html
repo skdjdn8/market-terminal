@@ -305,7 +305,7 @@
       </div>
     </div>
     <div id="notes-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-    <span class="font-mono text-[0.5rem] text-gray-600 mt-4 inline-block"><a href="javascript:openVIPAdmin()" class="hover:text-white">VIP管理</a></span>
+    <span class="font-mono text-[0.5rem] text-gray-600 mt-4 inline-block"><a href="javascript:openVIPAdmin()" class="hover:text-white">VIP码管理</a> · <a href="javascript:openPaymentAdmin()" class="hover:text-white">支付审核</a></span>
   </div>
 </section>
 
@@ -640,6 +640,26 @@ function updateAllVIPUI(){
     const ctrl=document.getElementById('vip-controls'); if(ctrl)ctrl.classList.add('hidden');
   }
 }
+async function openPaymentAdmin(){
+  const pw=prompt('管理密码:');if(pw!=='admin888')return;
+  const {data}=await db.from('payment_requests').select('*').order('created_at',{ascending:false}).limit(20);
+  if(!data||!data.length){alert('暂无支付申请');return;}
+  let list='待审核支付申请：\n\n';
+  data.forEach((d,i)=>{list+=`#${i+1} ${d.user_email} | ${d.tier} ¥${d.amount} | ${d.status}\n`;});
+  const num=prompt(list+'\n输入编号批准（如1），输入0跳过');
+  if(!num||num==='0')return;
+  const idx=parseInt(num)-1;
+  if(idx<0||idx>=data.length)return;
+  const req=data[idx];
+  await db.from('payment_requests').update({status:'approved'}).eq('id',req.id);
+  // Activate VIP
+  const {data:prof}=await db.from('profiles').select('*').eq('id',req.user_id).single();
+  const expiry=new Date();expiry.setDate(expiry.getDate()+(req.tier==='monthly'?30:req.tier==='yearly'?365:3650));
+  if(prof){await db.from('profiles').update({vip_status:'active',vip_expiry:expiry.toISOString()}).eq('id',req.user_id);}
+  else{await db.from('profiles').insert({id:req.user_id,email:req.user_email,vip_status:'active',vip_expiry:expiry.toISOString()});}
+  alert(`✅ 已批准 ${req.user_email} 的${req.tier}会员`);
+}
+
 function openVIPAdmin(){
   const pw=prompt('管理密码:');if(pw!=='admin888')return;
   const codes=prompt('VIP码列表（每行一个）:',VIP_CODES.join('\n'));
