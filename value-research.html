@@ -96,7 +96,10 @@
   <div class="max-w-7xl mx-auto px-6">
     <div class="mb-10"><div class="font-mono text-[0.65rem] tracking-[0.2em] text-[#e8c382] mb-3">// SECTION_01</div>
       <h2 class="font-gloock text-4xl md:text-6xl text-white">资料分析<span class="text-gradient-gold"> ANALYZE</span></h2>
-      <p class="font-manrope text-sm text-gray-500 mt-3">输入文章链接或粘贴文本 — AI 判断可信度、提取论点、标注偏见</p></div>
+      <p class="font-manrope text-sm text-gray-500 mt-3">
+        粘贴文章链接或全文 → AI 评估可信度、检测偏见、提炼核心论点<br>
+        <span class="text-gray-600 text-xs">用途：快速判断一篇市场分析文章是否值得认真阅读</span>
+      </p></div>
 
     <div class="frame-section rounded-sm p-6 scanline-subtle mb-6">
       <textarea id="article-input" placeholder="粘贴文章链接或全文内容..." rows="5"
@@ -132,7 +135,10 @@
   <div class="max-w-7xl mx-auto px-6">
     <div class="mb-10"><div class="font-mono text-[0.65rem] tracking-[0.2em] text-[#e8c382] mb-3">// SECTION_03</div>
       <h2 class="font-gloock text-4xl md:text-6xl text-white">公司估值<span class="text-gradient-gold"> VALUATION</span></h2>
-      <p class="font-manrope text-sm text-gray-500 mt-3">基于价值投资框架 — 护城河 + 财务健康 + 安全边际</p></div>
+      <p class="font-manrope text-sm text-gray-500 mt-3">
+        输入公司名或股票代码 → 护城河分析 + 财务健康 + 估值判断 + 安全边际<br>
+        <span class="text-gray-600 text-xs">用途：从价值投资角度判断一家公司值不值得深入研究</span>
+      </p></div>
 
     <div class="frame-section rounded-sm p-6 scanline-subtle mb-6">
       <div class="flex flex-wrap gap-4">
@@ -154,7 +160,10 @@
   <div class="max-w-7xl mx-auto px-6">
     <div class="mb-10"><div class="font-mono text-[0.65rem] tracking-[0.2em] text-[#e8c382] mb-3">// SECTION_04</div>
       <h2 class="font-gloock text-4xl md:text-6xl text-white">历史复盘<span class="text-gradient-gold"> HISTORY</span></h2>
-      <p class="font-manrope text-sm text-gray-500 mt-3">选择历史事件 → AI 深度复盘：起因、经过、教训、当下启示</p></div>
+      <p class="font-manrope text-sm text-gray-500 mt-3">
+        选择预设事件或输入自定义场景 → AI 深度复盘<br>
+        <span class="text-gray-600 text-xs">加上假设条件可做反事实推演：如果当时政策不同会怎样？</span>
+      </p></div>
 
     <!-- Preset events -->
     <div class="flex flex-wrap gap-2 mb-6">
@@ -168,15 +177,22 @@
 
     <!-- Custom input -->
     <div class="frame-section rounded-sm p-6 scanline-subtle mb-6">
-      <div class="flex gap-3">
-        <input id="history-input" placeholder="或输入自定义事件..."
+      <div class="flex gap-3 mb-3">
+        <input id="history-input" placeholder="自定义事件，如：2022年英国养老金危机..."
           class="flex-1 bg-transparent border border-white/10 rounded-sm px-4 py-3 font-manrope text-sm text-white outline-none focus:border-[#e8c382] placeholder-gray-700">
-        <button onclick="reviewHistory(document.getElementById('history-input').value)" id="btn-history"
+        <button onclick="reviewHistory(document.getElementById('history-input').value, document.getElementById('history-whatif').value)" id="btn-history"
           class="px-5 py-3 rounded-sm bg-[#e8c382] text-[#070707] font-mono text-xs tracking-widest font-semibold hover:bg-[#f0d89c] disabled:opacity-50">
           📜 复盘
         </button>
       </div>
+      <div class="flex gap-3">
+        <input id="history-whatif" placeholder="🤔 假设条件（可选）：如果美联储当时不救市会怎样？如果中国央行提前降息？"
+          class="flex-1 bg-transparent border border-white/10 rounded-sm px-4 py-3 font-manrope text-sm text-white outline-none focus:border-[#e8c382] placeholder-gray-600 italic">
+      </div>
       <span id="history-status" class="font-mono text-[0.55rem] text-gray-600 mt-2 inline-block"></span>
+      <div class="font-mono text-[0.5rem] text-gray-600 mt-2">
+        💡 <span class="text-gray-500">复盘模式：分析已发生事件的原因和教训 | 添加假设条件 → 分析"如果当时不同会怎样"的反事实推演</span>
+      </div>
     </div>
     <div id="history-result" class="hidden frame-section rounded-sm p-6"></div>
   </div>
@@ -186,7 +202,11 @@
 <section id="outlook" class="py-20 border-t border-white/[0.03]">
   <div class="max-w-7xl mx-auto px-6">
     <div class="mb-10"><div class="font-mono text-[0.65rem] tracking-[0.2em] text-[#e8c382] mb-3">// SECTION_05</div>
-      <h2 class="font-gloock text-4xl md:text-6xl text-white">展望预测<span class="text-gradient-gold"> OUTLOOK</span></h2></div>
+      <h2 class="font-gloock text-4xl md:text-6xl text-white">展望预测<span class="text-gradient-gold"> OUTLOOK</span></h2>
+      <p class="font-manrope text-sm text-gray-500 mt-3">
+        基于当前宏观环境生成 6-12 月展望报告<br>
+        <span class="text-gray-600 text-xs">可添加假设条件做场景分析：如果伊朗封锁海峡？如果美联储降息200bp？</span>
+      </p></div>
 
     <!-- VIP Gate -->
     <div id="vip-lock" class="frame-section rounded-sm p-6 scanline-subtle mb-6">
@@ -198,6 +218,8 @@
       <div class="font-mono text-[0.55rem] text-gray-600 mt-3" id="vip-msg"></div>
     </div>
     <div id="vip-controls" class="hidden">
+      <input id="outlook-scenario" placeholder="🎯 假设条件（可选）：如果伊朗长期封锁霍尔木兹海峡？如果中国推出10万亿刺激？"
+        class="w-full bg-transparent border border-white/10 rounded-sm px-4 py-3 font-manrope text-sm text-white outline-none focus:border-[#e8c382] placeholder-gray-600 italic mb-4">
       <button onclick="generateOutlook()" id="btn-outlook" class="px-5 py-2.5 rounded-sm bg-[#e8c382] text-[#070707] font-mono text-xs tracking-widest font-semibold hover:bg-[#f0d89c] mb-6">📊 生成展望报告</button>
       <div id="outlook-result" class="frame-section rounded-sm p-6"></div>
       <span class="font-mono text-[0.5rem] text-gray-600 mt-2 inline-block">👑 VIP · <a href="javascript:logoutVIP()" class="hover:text-white">退出</a></span>
@@ -403,20 +425,45 @@ async function analyzeCompany() {
 
 <!-- ── HISTORY REVIEW ── -->
 <script>
-async function reviewHistory(event) {
+async function reviewHistory(event, whatif='') {
   if (!event.trim()) return;
   const btn = document.getElementById('btn-history');
   const status = document.getElementById('history-status');
   const result = document.getElementById('history-result');
-  btn.disabled = true; status.textContent = '深度复盘分析中...';
+  btn.disabled = true; status.textContent = whatif ? '反事实推演分析中...' : '深度复盘分析中...';
   result.classList.remove('hidden');
-  result.innerHTML = '<div class="animate-pulse text-[#e8c382] font-mono text-sm py-8">AI 正在分析该历史事件...</div>';
+  result.innerHTML = '<div class="animate-pulse text-[#e8c382] font-mono text-sm py-8">AI 正在分析...</div>';
 
   try {
-    const prompt = `请复盘：**${event}**\n\n输出：## 📜 事件背景\n## ⏱ 时间线\n## 🔍 根本原因\n## 📉 市场影响\n## 💡 核心教训\n## 🔗 与当下的关联\n## 📚 推荐阅读\n\n中文，数据精确。`;
-    const res = await callDS('你是资深金融历史学家，擅长对市场重大事件进行深度复盘。分析严谨、数据扎实，能从历史中提炼对当下有价值的投资洞见。', prompt);
+    let prompt, system;
+    if (whatif.trim()) {
+      system = '你是资深金融历史学家和场景分析专家。你善于进行反事实推演——分析"如果历史走向不同会发生什么"。你的推演基于已知的经济规律和历史先例，严谨但不失想象力。';
+      prompt = `请对以下历史事件进行反事实推演：
+
+**历史事件**: ${event}
+**假设条件**: ${whatif}
+
+输出结构：
+## 📜 真实历史回顾
+[简述实际发生的事件经过]
+
+## 🔀 反事实推演
+[在给定假设条件下，事件最可能的发展路径是什么？分短期（1-3个月）、中期（6-12个月）、长期（2-5年）]
+
+## 📊 对各类资产的影响
+[假设情景下，股票、债券、商品、汇率分别会如何反应？]
+
+## 💡 核心启示
+[这个反事实推演告诉我们什么？对当前投资决策有什么指导意义？]
+
+用中文撰写。`;
+    } else {
+      system = '你是资深金融历史学家，擅长对市场重大事件进行深度复盘。分析严谨、数据扎实，能从历史中提炼对当下有价值的投资洞见。';
+      prompt = `请复盘：**${event}**\n\n输出：## 📜 事件背景\n## ⏱ 时间线\n## 🔍 根本原因\n## 📉 市场影响\n## 💡 核心教训\n## 🔗 与当下的关联\n## 📚 推荐阅读\n\n中文，数据精确。`;
+    }
+    const res = await callDS(system, prompt, 0.3, 4096);
     result.innerHTML = `<div class="prose prose-invert max-w-none font-manrope text-sm leading-relaxed text-gray-300">${renderMD(res)}</div>`;
-    status.textContent = '✅ 复盘完成';
+    status.textContent = '✅ 完成';
   } catch(e) { result.innerHTML = `<div class="text-[#e61919]">${e.message}</div>`; status.textContent = '❌ 失败'; }
   finally { btn.disabled = false; }
 }
@@ -445,29 +492,53 @@ function openVIPAdmin(){
 async function generateOutlook() {
   const btn = document.getElementById('btn-outlook');
   const result = document.getElementById('outlook-result');
-  btn.disabled = true; result.innerHTML = '<div class="animate-pulse text-[#e8c382] font-mono text-sm py-8">生成多agent展望报告...</div>';
+  const scenario = document.getElementById('outlook-scenario').value.trim();
+  btn.disabled = true; result.innerHTML = '<div class="animate-pulse text-[#e8c382] font-mono text-sm py-8">生成展望报告...</div>';
 
-  const prompt = `请基于当前宏观经济环境（2026年中期），结合价值投资理念，撰写一份未来6-12个月的市场展望报告。
+  let system, prompt;
+  if (scenario) {
+    system = '你是资深宏观策略师和场景分析专家。你善于基于假设条件推演未来市场走向。你的推演严谨，基于经济学原理和历史规律。你坚持价值投资理念。';
+    prompt = `请基于以下假设条件进行场景分析：
 
-## 宏观环境
-[利率、通胀、地缘政治的核心判断]
+**假设条件**: ${scenario}
+**当前背景**: 2026年中期宏观经济环境
 
-## 资产配置建议
-[按照价值投资逻辑：哪些资产类别被低估？哪些被高估？]
+请从以下维度推演该假设情景的影响：
 
-## 行业机会
-[3-5个值得深入研究的行业，说明为什么]
+## 🎯 情景描述
+[简述该假设条件发生的概率和触发机制]
 
-## 风险警告
-[最可能出错的3个地方]
+## 📊 对大类资产的影响
+[股票（分市场）、债券（短/中/长期）、商品（能源/金属/农产品）、汇率、黄金]
 
-## 投资格言
-[引用一句巴菲特/芒格的名言作为结尾]
+## 🏭 行业赢家与输家
+[哪些行业受益？哪些受损？为什么？]
+
+## ⏱ 时间维度
+[短期(1-3月)、中期(6-12月)、长期(2-5年) 分别会发生什么]
+
+## ⚠️ 二阶效应
+[市场会如何反应市场的反应？可能被忽视的连锁反应]
+
+## 💡 投资启示
+[在这种情景下，价值投资者应该怎么做？]
+
+用中文撰写，专业研报格式。`;
+  } else {
+    system = '你是资深宏观策略师，坚持价值投资理念。你的判断永远基于基本面，不追逐短期市场情绪。';
+    prompt = `请基于当前宏观经济环境（2026年中期），结合价值投资理念，撰写一份未来6-12个月的市场展望报告。
+
+## 宏观环境\n[利率、通胀、地缘政治的核心判断]
+## 资产配置建议\n[哪些资产类别被低估？哪些被高估？]
+## 行业机会\n[3-5个值得深入研究的行业]
+## 风险警告\n[最可能出错的3个地方]
+## 投资格言\n[引用巴菲特/芒格的名言]
 
 输出中文，专业研报格式。`;
+  }
 
   try {
-    const res = await callDS('你是资深宏观策略师，坚持价值投资理念。你的判断永远基于基本面，不追逐短期市场情绪。', prompt, 0.3, 4096);
+    const res = await callDS(system, prompt, 0.3, 4096);
     result.innerHTML = `<div class="prose prose-invert max-w-none font-manrope text-sm leading-relaxed text-gray-300">${renderMD(res)}</div>`;
   } catch(e) { result.innerHTML = `<div class="text-[#e61919]">${e.message}</div>`; }
   finally { btn.disabled = false; }
