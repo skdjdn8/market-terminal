@@ -7,6 +7,7 @@
 <script>tailwind.config={theme:{extend:{fontFamily:{gloock:['Gloock','serif'],bebas:['Bebas Neue','sans-serif'],manrope:['Manrope','sans-serif'],mono:['JetBrains Mono','monospace']}}}}}</script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Gloock&family=JetBrains+Mono:wght@400;600&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/iconify-icon@1.0.7/dist/iconify-icon.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="apikeys.js"></script>
 <style>
@@ -67,17 +68,24 @@
 <!-- ═══════════════════════════════════ HERO ═══════════════════════════════════ -->
 <section class="min-h-[70vh] flex items-center">
   <div class="max-w-7xl mx-auto px-6 w-full">
-    <div class="max-w-3xl">
-      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-sm border border-[#e8c382]/20 bg-[#e8c382]/5 mb-8">
-        <span class="w-1.5 h-1.5 rounded-full bg-[#e8c382] animate-pulse"></span>
-        <span class="font-mono text-[0.65rem] tracking-[0.15em] text-[#e8c382]">VALUE RESEARCH DESK v3.0</span>
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_1fr] gap-12 items-center">
+      <!-- Left: text -->
+      <div>
+        <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-sm border border-[#e8c382]/20 bg-[#e8c382]/5 mb-8">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#e8c382] animate-pulse"></span>
+          <span class="font-mono text-[0.65rem] tracking-[0.15em] text-[#e8c382]">INVESTMENT RESEARCH v3.0</span>
+        </div>
+        <h1 class="font-gloock text-5xl md:text-8xl leading-[0.9] text-white mb-6">
+          投资<br><span class="text-gradient-gold">研究终端</span>
+        </h1>
+        <p class="font-manrope text-sm text-gray-500 max-w-xl leading-relaxed mb-8">
+          收集优质文章 · 判断信息可信度 · 深度分析公司 · 提炼投资洞见
+        </p>
       </div>
-      <h1 class="font-gloock text-5xl md:text-8xl leading-[0.9] text-white mb-6">
-        投资<br><span class="text-gradient-gold">研究终端</span>
-      </h1>
-      <p class="font-manrope text-sm text-gray-500 max-w-xl leading-relaxed mb-8">
-        收集优质文章 · 判断信息可信度 · 深度分析公司 · 提炼投资洞见
-      </p>
+      <!-- Right: Three.js globe -->
+      <div class="relative h-[400px] lg:h-[550px] frame-section rounded-sm overflow-hidden">
+        <canvas id="heroCanvas" style="display:block;width:100%;height:100%"></canvas>
+      </div>
     </div>
   </div>
 </section>
@@ -445,6 +453,64 @@ async function saveNote(){
 async function editNote(id){openNoteEditor(id);}
 async function deleteNote(id){if(confirm('删除？')){await db.from('notes').delete().eq('id',id);renderNotes();}}
 renderNotes();
+</script>
+
+<!-- Three.js Wireframe Globe -->
+<script>
+(function(){
+  const canvas = document.getElementById('heroCanvas');
+  if (!canvas) return;
+  const container = canvas.parentElement;
+  canvas.width = container.clientWidth;
+  canvas.height = container.clientHeight;
+
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setSize(canvas.width, canvas.height);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, canvas.width/canvas.height, 0.1, 100);
+  camera.position.set(3, 1.5, 6);
+  camera.lookAt(0, 0, 0);
+
+  scene.add(new THREE.AmbientLight(0x222244, 0.5));
+  const dl = new THREE.DirectionalLight(0xe8c382, 0.8); dl.position.set(5,5,5); scene.add(dl);
+  const dl2 = new THREE.DirectionalLight(0x4466aa, 0.4); dl2.position.set(-3,-1,-3); scene.add(dl2);
+
+  const globe = new THREE.Mesh(new THREE.IcosahedronGeometry(1.6, 3), new THREE.MeshBasicMaterial({color:0xe8c382,wireframe:true,transparent:true,opacity:0.15}));
+  scene.add(globe);
+  const inner = new THREE.Mesh(new THREE.IcosahedronGeometry(1.2, 2), new THREE.MeshBasicMaterial({color:0x4466aa,wireframe:true,transparent:true,opacity:0.1}));
+  scene.add(inner);
+
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(1.9, 0.015, 16, 100), new THREE.MeshBasicMaterial({color:0xe8c382,transparent:true,opacity:0.3}));
+  ring.rotation.x = Math.PI/2.5; scene.add(ring);
+  const ring2 = new THREE.Mesh(new THREE.TorusGeometry(2.1, 0.01, 16, 80), new THREE.MeshBasicMaterial({color:0x8899cc,transparent:true,opacity:0.2}));
+  ring2.rotation.x = -Math.PI/3; ring2.rotation.y = Math.PI/4; scene.add(ring2);
+
+  const pGeo = new THREE.BufferGeometry();
+  const pCount = 200, pos = new Float32Array(pCount*3);
+  for (let i=0; i<pCount; i++) { pos[i*3]=(Math.random()-.5)*6; pos[i*3+1]=(Math.random()-.5)*6; pos[i*3+2]=(Math.random()-.5)*6; }
+  pGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const particles = new THREE.Points(pGeo, new THREE.PointsMaterial({color:0xe8c382,size:0.02,transparent:true,opacity:0.6}));
+  scene.add(particles);
+
+  function animate(t) {
+    requestAnimationFrame(animate);
+    const s = t*0.001;
+    globe.rotation.y = s*0.15; globe.rotation.x = Math.sin(s*0.2)*0.1;
+    inner.rotation.y = -s*0.2; inner.rotation.z = Math.cos(s*0.15)*0.1;
+    ring.rotation.z += 0.003; ring2.rotation.z -= 0.002;
+    particles.rotation.y += 0.001; particles.rotation.x += 0.0005;
+    renderer.render(scene, camera);
+  }
+  requestAnimationFrame(animate);
+
+  window.addEventListener('resize', () => {
+    canvas.width = container.clientWidth; canvas.height = container.clientHeight;
+    renderer.setSize(canvas.width, canvas.height);
+    camera.aspect = canvas.width/canvas.height; camera.updateProjectionMatrix();
+  });
+})();
 </script>
 
 </body>
