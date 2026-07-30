@@ -515,39 +515,23 @@ body {
       <p class="font-manrope text-sm text-gray-500 mt-3 max-w-lg">TradingView 实时图表 — 过去一周价格走势，无需手动刷新</p>
     </div>
 
-    <!-- 2x2 Chart Grid -->
+    <!-- 2x2 Chart Grid — TradingView Mini Symbol Overview -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-      <!-- Gold 1W -->
-      <div class="frame-section rounded-sm overflow-hidden p-3" style="height:380px">
-        <div class="font-mono text-[0.55rem] tracking-[0.15em] text-gray-500 mb-2 px-1">🥇 XAU/USD · 黄金现货</div>
-        <div class="tradingview-widget-container" style="height:340px">
-          <div class="tradingview-widget-container__widget"></div>
-          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-chart.js" async>{"symbol":"OANDA:XAUUSD","width":"100%","height":"100%","locale":"zh_CN","dateRange":"1W","colorTheme":"dark","isTransparent":true,"autosize":true}</script>
-        </div>
+      <div class="frame-section rounded-sm overflow-hidden" style="height:280px">
+        <div class="font-mono text-[0.5rem] tracking-[0.15em] text-gray-500 mb-1 px-2 pt-2">🥇 XAU/USD · 黄金现货</div>
+        <div class="tradingview-widget-container" style="height:250px"><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>{"symbol":"OANDA:XAUUSD","width":"100%","height":"100%","locale":"zh_CN","dateRange":"1W","colorTheme":"dark","isTransparent":true,"autosize":true,"largeChartUrl":""}</script></div>
       </div>
-      <!-- Silver 1W -->
-      <div class="frame-section rounded-sm overflow-hidden p-3" style="height:380px">
-        <div class="font-mono text-[0.55rem] tracking-[0.15em] text-gray-500 mb-2 px-1">🥈 XAG/USD · 白银现货</div>
-        <div class="tradingview-widget-container" style="height:340px">
-          <div class="tradingview-widget-container__widget"></div>
-          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-chart.js" async>{"symbol":"OANDA:XAGUSD","width":"100%","height":"100%","locale":"zh_CN","dateRange":"1W","colorTheme":"dark","isTransparent":true,"autosize":true}</script>
-        </div>
+      <div class="frame-section rounded-sm overflow-hidden" style="height:280px">
+        <div class="font-mono text-[0.5rem] tracking-[0.15em] text-gray-500 mb-1 px-2 pt-2">🥈 XAG/USD · 白银现货</div>
+        <div class="tradingview-widget-container" style="height:250px"><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>{"symbol":"OANDA:XAGUSD","width":"100%","height":"100%","locale":"zh_CN","dateRange":"1W","colorTheme":"dark","isTransparent":true,"autosize":true,"largeChartUrl":""}</script></div>
       </div>
-      <!-- Oil 1W -->
-      <div class="frame-section rounded-sm overflow-hidden p-3" style="height:380px">
-        <div class="font-mono text-[0.55rem] tracking-[0.15em] text-gray-500 mb-2 px-1">🛢️ UKOIL · 布伦特原油</div>
-        <div class="tradingview-widget-container" style="height:340px">
-          <div class="tradingview-widget-container__widget"></div>
-          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-chart.js" async>{"symbol":"OANDA:BCOUSD","width":"100%","height":"100%","locale":"zh_CN","dateRange":"1W","colorTheme":"dark","isTransparent":true,"autosize":true}</script>
-        </div>
+      <div class="frame-section rounded-sm overflow-hidden" style="height:280px">
+        <div class="font-mono text-[0.5rem] tracking-[0.15em] text-gray-500 mb-1 px-2 pt-2">🛢️ 布伦特原油</div>
+        <div class="tradingview-widget-container" style="height:250px"><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>{"symbol":"OANDA:BCOUSD","width":"100%","height":"100%","locale":"zh_CN","dateRange":"1W","colorTheme":"dark","isTransparent":true,"autosize":true,"largeChartUrl":""}</script></div>
       </div>
-      <!-- DXY 1W -->
-      <div class="frame-section rounded-sm overflow-hidden p-3" style="height:380px">
-        <div class="font-mono text-[0.55rem] tracking-[0.15em] text-gray-500 mb-2 px-1">💵 DXY · 美元指数</div>
-        <div class="tradingview-widget-container" style="height:340px">
-          <div class="tradingview-widget-container__widget"></div>
-          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-chart.js" async>{"symbol":"TVC:DXY","width":"100%","height":"100%","locale":"zh_CN","dateRange":"1W","colorTheme":"dark","isTransparent":true,"autosize":true}</script>
-        </div>
+      <div class="frame-section rounded-sm overflow-hidden" style="height:280px">
+        <div class="font-mono text-[0.5rem] tracking-[0.15em] text-gray-500 mb-1 px-2 pt-2">💵 DXY · 美元指数</div>
+        <div class="tradingview-widget-container" style="height:250px"><div class="tradingview-widget-container__widget"></div><script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>{"symbol":"TVC:DXY","width":"100%","height":"100%","locale":"zh_CN","dateRange":"1W","colorTheme":"dark","isTransparent":true,"autosize":true,"largeChartUrl":""}</script></div>
       </div>
     </div>
   </div>
