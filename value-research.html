@@ -61,8 +61,27 @@
       <a href="#outlook" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382]">// 展望</a>
       <a href="#notes" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382]">// 随笔</a>
     </nav>
+    <!-- Auth -->
+    <div class="flex items-center gap-3">
+      <span id="auth-user" class="hidden font-mono text-xs text-[#e8c382]"></span>
+      <button id="btn-login" onclick="showAuthModal('login')" class="font-mono text-xs text-gray-400 hover:text-white border border-white/10 rounded-sm px-3 py-1.5">登录</button>
+      <button id="btn-register" onclick="showAuthModal('register')" class="font-mono text-xs text-gray-400 hover:text-white px-2">注册</button>
+      <button id="btn-logout" onclick="logout()" class="hidden font-mono text-xs text-gray-500 hover:text-[#e61919]">退出</button>
+    </div>
   </div>
 </header>
+
+<!-- Auth Modal -->
+<div id="auth-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,0,0,.85);backdrop-filter:blur(8px)" onclick="if(event.target===this)this.classList.add('hidden')">
+  <div class="frame-section rounded-sm p-6 w-full max-w-sm">
+    <div class="flex justify-between items-center mb-4"><div class="font-gloock text-xl text-white" id="auth-title">登录</div><button onclick="document.getElementById('auth-modal').classList.add('hidden')" class="text-gray-500 hover:text-white">✕</button></div>
+    <input id="auth-email" type="email" placeholder="邮箱" class="w-full bg-transparent border border-white/10 rounded-sm px-4 py-2.5 mb-3 font-mono text-sm text-white outline-none focus:border-[#e8c382]">
+    <input id="auth-password" type="password" placeholder="密码" class="w-full bg-transparent border border-white/10 rounded-sm px-4 py-2.5 mb-4 font-mono text-sm text-white outline-none focus:border-[#e8c382]">
+    <button id="auth-submit" class="w-full py-2.5 rounded-sm bg-[#e8c382] text-[#070707] font-mono text-sm font-semibold">登录</button>
+    <div id="auth-error" class="font-mono text-xs text-[#e61919] mt-3 hidden"></div>
+    <div class="font-manrope text-xs text-gray-600 mt-3 text-center" id="auth-switch"></div>
+  </div>
+</div>
 
 <main class="relative z-10 pt-16">
 
@@ -298,6 +317,46 @@ const SUPABASE_URL = 'https://kjdbxsirpkuyoojnsgtv.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_wniWhWzgN5WRFLdI0hkgwA__hmbe95V';
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const DSKEY = (window.API_KEYS && window.API_KEYS.DEEPSEEK) || '';
+let currentUser = null, currentProfile = null;
+
+// ── AUTH ──
+let authMode = 'login';
+function showAuthModal(mode) { authMode = mode; document.getElementById('auth-title').textContent = mode==='login'?'登录':'注册'; document.getElementById('auth-submit').textContent = mode==='login'?'登录':'注册'; document.getElementById('auth-switch').innerHTML = mode==='login'?'没有账号？<a href=\"#\" onclick=\"showAuthModal(\"register\")\">注册</a>':'已有账号？<a href=\"#\" onclick=\"showAuthModal(\"login\")\">登录</a>'; document.getElementById('auth-error').classList.add('hidden'); document.getElementById('auth-modal').classList.remove('hidden'); }
+
+async function handleAuth() {
+  const email = document.getElementById('auth-email').value.trim();
+  const pw = document.getElementById('auth-password').value;
+  if(!email||!pw) return;
+  const err = document.getElementById('auth-error');
+  try {
+    let r;
+    if(authMode==='register'){r=await db.auth.signUp({email,password:pw});if(r.data.user){await db.from('profiles').insert({id:r.data.user.id,email});}}
+    else{r=await db.auth.signInWithPassword({email,password:pw});}
+    if(r.error)throw r.error;
+    if(authMode==='register'){err.textContent='注册成功！请登录';err.classList.remove('hidden');err.style.color='#4af626';return;}
+    document.getElementById('auth-modal').classList.add('hidden');
+    await loadUser();
+  }catch(e){err.textContent=e.message;err.classList.remove('hidden');}
+}
+document.getElementById('auth-submit').addEventListener('click',handleAuth);
+
+async function loadUser(){const{data:{user}}=await db.auth.getUser();currentUser=user;if(user){const{data}=await db.from('profiles').select('*').eq('id',user.id).single();currentProfile=data;updateAuthUI();}}
+async function logout(){await db.auth.signOut();currentUser=null;currentProfile=null;updateAuthUI();}
+function updateAuthUI(){
+  if(currentUser){document.getElementById('btn-login').classList.add('hidden');document.getElementById('btn-register').classList.add('hidden');document.getElementById('btn-logout').classList.remove('hidden');const u=document.getElementById('auth-user');u.classList.remove('hidden');const vip=currentProfile?.vip_status==='active'?' 👑':'';u.textContent=currentUser.email+vip;}
+  else{document.getElementById('btn-login').classList.remove('hidden');document.getElementById('btn-register').classList.remove('hidden');document.getElementById('btn-logout').classList.add('hidden');document.getElementById('auth-user').classList.add('hidden');}
+  updateAllVIPUI();
+}
+loadUser();
+
+// Override VIP with profile-based
+function isVIP(){return currentProfile?.vip_status==='active'||localStorage.getItem('vip_unlocked')==='true';}
+async function submitPaymentRequest(tier){
+  if(!currentUser){alert('请先登录');return;}
+  const amounts={monthly:'29',yearly:'199',lifetime:'499'};
+  await db.from('payment_requests').insert({id:Date.now(),user_id:currentUser.id,user_email:currentUser.email,tier,amount:amounts[tier]||''});
+  alert('支付申请已提交！\n\n请微信转账后联系客服\n微信号：wxid_msz1oritmsyd22\n\n客服审核后将为您开通VIP');
+}
 
 async function callDS(system, user, temp=0.3, maxTokens=2048) {
   const r = await fetch('https://api.deepseek.com/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${DSKEY}`},body:JSON.stringify({model:'deepseek-chat',temperature:temp,max_tokens:maxTokens,messages:[{role:'system',content:system},{role:'user',content:user}]})});
@@ -565,7 +624,7 @@ function unlockVIP(){
   else{const m=document.getElementById('vip-msg2')||document.getElementById('vip-msg');if(m){m.textContent='无效VIP码';m.style.color='#e61919';}}
 }
 function logoutVIP(){localStorage.removeItem('vip_unlocked');updateAllVIPUI();}
-function purchaseVIP(tier){const p={monthly:'¥29/月',yearly:'¥199/年',lifetime:'¥499永久'};alert(`📱 ${p[tier]||tier}\n\n请微信转账后联系客服获取VIP码\n\n微信号：wxid_msz1oritmsyd22\n\n转账备注：${tier}-${Date.now().toString(36)}\n\n24小时内发送VIP码`);}
+function purchaseVIP(tier){submitPaymentRequest(tier);}
 function updateAllVIPUI(){
   const badge = document.getElementById('vip-status-badge');
   const logoutBtn = document.getElementById('vip-logout-btn');
