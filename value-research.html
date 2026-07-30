@@ -377,39 +377,41 @@ async function analyzeCompany() {
   result.innerHTML = '<div class="animate-pulse text-[#e8c382] font-mono text-sm py-8">正在分析...</div>';
 
   try {
-    // Fetch financial data from Yahoo
-    let finData = '无法获取实时财务数据，请基于公开信息和价值投资框架进行分析。';
+    // Fetch current price from Yahoo
+    let priceData = '';
     try {
       const r = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(name)}?interval=1d&range=1y`);
       const j = await r.json();
       const m = j?.chart?.result?.[0]?.meta;
-      if (m) finData = `当前价格: $${m.regularMarketPrice} | 52周高: $${m.fiftyTwoWeekHigh} | 52周低: $${m.fiftyTwoWeekLow} | 前收盘: $${m.previousClose}`;
+      if (m) priceData = `当前股价: $${m.regularMarketPrice} | 52周高: $${m.fiftyTwoWeekHigh} | 52周低: $${m.fiftyTwoWeekLow}`;
     } catch {}
 
-    const prompt = `请用价值投资框架分析：**${name}**
+    const prompt = `请用价值投资框架深度分析：**${name}**
+${priceData ? '\n' + priceData : ''}
 
-可用财务数据：${finData}
+请使用你训练数据中最新可用的财务信息（2025-2026年数据），从以下维度分析：
 
 请从以下维度分析：
+
 ## 🏰 护城河分析
-[品牌、转换成本、网络效应、成本优势 — 这个公司有没有持久竞争优势？]
+[品牌、转换成本、网络效应、成本优势 — 这个公司有没有持久竞争优势？护城河在变宽还是变窄？]
 
 ## 📊 财务健康
-[从公开信息判断：ROIC是否持续>15%？负债率？自由现金流质量？]
+[列出最新可用数据：ROIC、ROE、毛利率、净利率、负债/权益比、自由现金流。判断财务质量是优秀/良好/一般/危险]
 
 ## 💰 估值判断
-[当前价格相对历史区间处于什么位置？用PE/PB/FCF yield判断贵不贵]
+[当前PE、PB、PS、FCF yield是多少？相对历史5年均值和行业平均处于什么位置？贵不贵？]
 
 ## ⚠️ 风险与红旗
-[应收异常？关联交易？管理层问题？行业逆风？]
+[应收异常？关联交易？库存积压？商誉过高？管理层减持？行业逆风？]
 
 ## 🎯 安全边际
-[跌到什么价位开始有安全边际？为什么？]
+[基于保守估值，跌到什么价位开始有安全边际？为什么是这个价格？]
 
 ## 📈 综合评分
-[1-10分，分别从护城河、财务、估值、管理层四个维度评分]
+[1-10分，护城河/财务/估值/管理层 四个维度各多少分]
 
-格式：结构清晰的专业投资研报，中文。不确定处标注[推测]。`;
+引用具体的财务数字，标注数据年份。不确定处标注[推测]。中文。`;
 
     const res = await callDS('你是资深价值投资者，精通巴菲特、芒格、格雷厄姆的投资框架。你善于从公开信息中识别护城河、判断财务质量、评估安全边际。', prompt);
     result.innerHTML = `<div class="prose prose-invert max-w-none font-manrope text-sm leading-relaxed text-gray-300">${renderMD(res)}</div>`;
