@@ -918,16 +918,62 @@ const SYMBOL_MAP = {
   'US3M':  { fh: '^IRX',         name: 'US 3M T-Bill',    unit: '%',   digits: 2, simPrice: 5.28,   spread: 0.01, simVol: 0.015 },
   'BTC':   { fh: 'BINANCE:BTCUSDT',name:'Bitcoin',         unit: 'USD',  digits:0, simPrice: 67250,  spread: 25.0, simVol: 0.025 },
   // --- Metals/Forex/Commodities: Yahoo Finance primary + Finnhub fallback ---
-  'GOLD':  { yh:'XAUUSD=X',fh:'OANDA:XAU_USD',name:'Gold Spot',     unit:'USD/oz',digits:2,simPrice:4055,spread:0.50,simVol:0.006},
-  'SILVER':{ yh:'XAGUSD=X',fh:'OANDA:XAG_USD',name:'Silver Spot',   unit:'USD/oz',digits:2,simPrice:55,  spread:0.03,simVol:0.014},
-  'PLAT':  { yh:'PL=F',    fh:'OANDA:XPT_USD',name:'Platinum Spot', unit:'USD/oz',digits:2,simPrice:1250,spread:1.20,simVol:0.012},
-  'PALL':  { yh:'PA=F',    fh:'OANDA:XPD_USD',name:'Palladium Spot',unit:'USD/oz',digits:2,simPrice:1300,spread:2.50,simVol:0.016},
-  'WTI':   { yh:'CL=F',    fh:'OANDA:WTI_USD',name:'WTI Crude Oil', unit:'USD/bbl',digits:2,simPrice:78.50,spread:0.03,simVol:0.015},
-  'BRENT': { yh:'BZ=F',    fh:'OANDA:BCO_USD',name:'Brent Crude Oil',unit:'USD/bbl',digits:2,simPrice:82.30,spread:0.03,simVol:0.014},
-  'COPPER':{ yh:'HG=F',    fh:'OANDA:XCu_USD',name:'Copper Futures',unit:'USD/lb',digits:2,simPrice:4.12,spread:0.002,simVol:0.018},
-  'DXY':   { yh:'DX-Y.NYB',fh:'DX-Y.NYB',    name:'US Dollar Index', unit:'',     digits:2,simPrice:104.25,spread:0.02,simVol:0.005},
-  'EURUSD':{ yh:'EURUSD=X',fh:'OANDA:EUR_USD',name:'EUR/USD',       unit:'',     digits:4,simPrice:1.0850,spread:0.0001,simVol:0.005},
+  // --- Metals spot: Sina fx_s prefix (matches XE spot, browser-only via script tag) ---
+  'GOLD':  { sn:'fx_sxauusd',name:'Gold Spot',      unit:'USD/oz',digits:2,simPrice:4055,spread:0.50,simVol:0.006},
+  'SILVER':{ sn:'fx_sxagusd',name:'Silver Spot',    unit:'USD/oz',digits:2,simPrice:55,  spread:0.03,simVol:0.014},
+  // --- Commodities: Yahoo Finance ---
+  'PLAT':  { yh:'PL=F',      name:'Platinum Spot',  unit:'USD/oz',digits:2,simPrice:1250,spread:1.20,simVol:0.012},
+  'PALL':  { yh:'PA=F',      name:'Palladium Spot', unit:'USD/oz',digits:2,simPrice:1300,spread:2.50,simVol:0.016},
+  'WTI':   { yh:'CL=F',      name:'WTI Crude Oil',  unit:'USD/bbl',digits:2,simPrice:78.50,spread:0.03,simVol:0.015},
+  'BRENT': { yh:'BZ=F',      name:'Brent Crude Oil',unit:'USD/bbl',digits:2,simPrice:82.30,spread:0.03,simVol:0.014},
+  'COPPER':{ yh:'HG=F',      name:'Copper Futures', unit:'USD/lb',digits:2,simPrice:4.12,spread:0.002,simVol:0.018},
+  // --- Forex: Sina + Yahoo fallback ---
+  'DXY':   { sn:'fx_susdidx',yh:'DX-Y.NYB',name:'US Dollar Index',unit:'',digits:2,simPrice:104.25,spread:0.02,simVol:0.005},
+  'EURUSD':{ sn:'fx_seurusd',yh:'EURUSD=X',name:'EUR/USD',        unit:'',digits:4,simPrice:1.0850,spread:0.0001,simVol:0.005},
 };
+
+// ═══════════════════════════════════════════
+// Sina Finance Spot Client — fx_s prefix = international spot (matches XE)
+// Loaded via script tag to avoid CORS/Referer blocks
+// ═══════════════════════════════════════════
+class SinaClient {
+  constructor() { this.ready = true; }
+  async fetchBatch(snSymbols) {
+    if (snSymbols.length === 0) return {};
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = `https://hq.sinajs.cn/list=${snSymbols.join(',')}&_=${Date.now()}`;
+      script.onload = () => {
+        const results = {};
+        for (const sn of snSymbols) {
+          const key = 'hq_str_' + sn;
+          const raw = window[key];
+          if (!raw) { results[sn] = null; continue; }
+          try {
+            const p = raw.split(',');
+            const price = parseFloat(p[0]);
+            if (!isFinite(price) || price <= 0) { results[sn] = null; continue; }
+            results[sn] = {
+              price,
+              change: parseFloat(p[1]) || 0,
+              changePct: parseFloat(p[2]) || 0,
+              prevClose: parseFloat(p[3]) || price,
+              open: parseFloat(p[4]) || price,
+              high: parseFloat(p[5]) || price,
+              low: parseFloat(p[6]) || price,
+              source: 'sina',
+            };
+          } catch(e) { results[sn] = null; }
+          try { delete window[key]; } catch {}
+        }
+        document.head.removeChild(script);
+        resolve(results);
+      };
+      script.onerror = () => { document.head.removeChild(script); resolve({}); };
+      document.head.appendChild(script);
+    });
+  }
+}
 
 // ═══════════════════════════════════════════
 // Yahoo Finance Client — free, no auth, reliable spot prices
@@ -1089,6 +1135,7 @@ class SimulatedAdapter {
 class MarketDataEngine {
   constructor() {
     this.finnhub = new FinnhubClient(API_KEYS.FINNHUB);
+    this.sina = new SinaClient();
     this.yahoo = new YahooClient();
     this.sim = new SimulatedAdapter();
 
@@ -1101,9 +1148,11 @@ class MarketDataEngine {
     // Build symbol lists
     this.fhSymbols = [];
     this.yhSymbols = [];
+    this.snSymbols = [];
     for (const [key, cfg] of Object.entries(SYMBOL_MAP)) {
       if (cfg.fh) this.fhSymbols.push({ key, fh: cfg.fh, fallbackFh: cfg.fhFallback || null });
       if (cfg.yh) this.yhSymbols.push({ key, yh: cfg.yh });
+      if (cfg.sn) this.snSymbols.push({ key, sn: cfg.sn });
     }
 
     // Init all symbols with seed data
@@ -1157,12 +1206,28 @@ class MarketDataEngine {
   async fetchRealData() {
     let successCount = 0;
 
-    // 1) Yahoo Finance: metals, forex, commodities (accurate spot prices)
-    if (this.yhSymbols.length > 0) {
+    // 1) Sina Finance: gold/silver spot + forex (browser script tag, matches XE spot)
+    if (this.snSymbols.length > 0) {
       try {
-        const yhList = this.yhSymbols.map(s => s.yh);
+        const snList = this.snSymbols.map(s => s.sn);
+        const snResults = await this.sina.fetchBatch(snList);
+        for (const item of this.snSymbols) {
+          const data = snResults[item.sn];
+          if (data && data.price) {
+            this._applyPrice(item.key, data, 'sina');
+            successCount++;
+          }
+        }
+      } catch(e) { console.warn('Sina fetch failed:', e.message); }
+    }
+
+    // 2) Yahoo Finance: commodities not covered by Sina
+    const yhOnly = this.yhSymbols.filter(s => !SYMBOL_MAP[s.key]?.sn);
+    if (yhOnly.length > 0) {
+      try {
+        const yhList = yhOnly.map(s => s.yh);
         const yhResults = await this.yahoo.fetchBatch(yhList);
-        for (const item of this.yhSymbols) {
+        for (const item of yhOnly) {
           const data = yhResults[item.yh];
           if (data && data.price) {
             this._applyPrice(item.key, data, 'yahoo');
@@ -1172,10 +1237,10 @@ class MarketDataEngine {
       } catch(e) { console.warn('Yahoo fetch failed:', e.message); }
     }
 
-    // 2) Finnhub: treasuries, crypto (remaining symbols without Yahoo)
+    // 3) Finnhub: treasuries, crypto only
     if (this.finnhub.ready) {
       try {
-        const fhOnly = this.fhSymbols.filter(s => !SYMBOL_MAP[s.key]?.yh);
+        const fhOnly = this.fhSymbols.filter(s => !SYMBOL_MAP[s.key]?.yh && !SYMBOL_MAP[s.key]?.sn);
         if (fhOnly.length === 0) { this.connected = successCount > 0; return successCount > 0; }
         const fhList = fhOnly.map(s => s.fh);
         const results = await this.finnhub.fetchBatch(fhList);
