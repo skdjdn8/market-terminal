@@ -333,7 +333,7 @@ async function handleAuth() {
     if(authMode==='register'){r=await db.auth.signUp({email,password:pw});if(r.data.user){await db.from('profiles').insert({id:r.data.user.id,email});}}
     else{r=await db.auth.signInWithPassword({email,password:pw});}
     if(r.error)throw r.error;
-    if(authMode==='register'){showAuthModal('login');document.getElementById('auth-error').textContent='注册成功！请登录';document.getElementById('auth-error').classList.remove('hidden');document.getElementById('auth-error').style.color='#4af626';return;}
+    if(authMode==='register'){document.getElementById('auth-error').textContent='注册成功！请查收确认邮件，点击链接后即可登录';document.getElementById('auth-error').classList.remove('hidden');document.getElementById('auth-error').style.color='#4af626';return;}
     document.getElementById('auth-modal').classList.add('hidden');
     await loadUser();
   }catch(e){err.textContent=e.message;err.classList.remove('hidden');}
