@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>价值投资研究台 · Value Research Desk</title>
+<title>投资研究终端 · Investment Research Terminal</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={theme:{extend:{fontFamily:{gloock:['Gloock','serif'],bebas:['Bebas Neue','sans-serif'],manrope:['Manrope','sans-serif'],mono:['JetBrains Mono','monospace']}}}}}</script>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Gloock&family=JetBrains+Mono:wght@400;600&family=Manrope:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -13,13 +13,37 @@
 *{box-sizing:border-box}body{background:#070707;color:#eaeaea;font-family:'Manrope',sans-serif;overflow-x:hidden}
 ::selection{background:#e8c382;color:#351e10}
 ::-webkit-scrollbar{width:.5rem}::-webkit-scrollbar-track{background:#070707}::-webkit-scrollbar-thumb{background:#333}::-webkit-scrollbar-thumb:hover{background:#e8c382}
-.frame-section{position:relative;background:linear-gradient(135deg,rgba(255,255,255,.03) 0%,rgba(255,255,255,.01) 50%,rgba(255,255,255,.02) 100%);border:1px solid rgba(255,255,255,.05);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),inset 0 -1px 0 rgba(0,0,0,.3),0 4px 24px rgba(0,0,0,.4)}
+
+/* Noise overlay */
+.noise-overlay{position:fixed;inset:0;z-index:50;pointer-events:none;opacity:.035;
+  background-image:url("data:image/svg+xml,%3Csvg width='400' height='400' viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat:repeat;background-size:200px 200px}
+
+/* Grid backgrounds */
+.grid-bg-body{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);
+  background-size:3rem 3rem;mask-image:radial-gradient(ellipse 80% 80% at 50% 0%,black 40%,transparent 100%)}
+
+/* Frame section */
+.frame-section{position:relative;background:linear-gradient(135deg,rgba(255,255,255,.03) 0%,rgba(255,255,255,.01) 50%,rgba(255,255,255,.02) 100%);border:1px solid rgba(255,255,255,.05);box-shadow:inset 0 1px 0 rgba(255,255,255,.04),inset 0 -1px 0 rgba(0,0,0,.3),0 4px 24px rgba(0,0,0,.4);backdrop-filter:blur(4px)}
+.frame-section::before{content:'';position:absolute;top:0;left:0;width:10px;height:10px;border-top:1px solid rgba(232,195,130,.4);border-left:1px solid rgba(232,195,130,.4);pointer-events:none}
+.frame-section::after{content:'';position:absolute;bottom:0;right:0;width:10px;height:10px;border-bottom:1px solid rgba(232,195,130,.4);border-right:1px solid rgba(232,195,130,.4);pointer-events:none}
+
+/* Scanline */
+.scanline-subtle{position:relative}.scanline-subtle::after{content:'';position:absolute;inset:0;pointer-events:none;z-index:1;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.015) 3px,rgba(0,0,0,.015) 6px)}
+
+/* Card hover */
+.data-card{transition:all .4s cubic-bezier(.16,1,.3,1)}.data-card:hover{border-color:rgba(232,195,130,.3);box-shadow:inset 0 1px 0 rgba(232,195,130,.1),0 8px 32px rgba(0,0,0,.6)}
+.data-card .card-glow{position:absolute;top:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,rgba(232,195,130,.6),transparent);opacity:0;transition:opacity .4s}
+.data-card:hover .card-glow{opacity:1}
+
 .text-gradient-gold{background:linear-gradient(135deg,#e8c382 0%,#c8943e 50%,#f0d89c 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.data-card{transition:all .4s cubic-bezier(.16,1,.3,1)}.data-card:hover{border-color:rgba(232,195,130,.3)}
 .header-logo{background:linear-gradient(180deg,#1a1a1a 0%,#0a0a0a 100%);box-shadow:0 2px 0 rgba(255,255,255,.06),0 -1px 0 rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.05)}
 </style>
 </head>
 <body class="antialiased">
+<div class="noise-overlay"></div>
+<div class="grid-bg-body"></div>
 
 <!-- Header -->
 <header class="fixed top-0 left-0 right-0 z-20 backdrop-blur-xl" style="background:rgba(7,7,7,.85);border-bottom:1px solid rgba(255,255,255,.06)">
@@ -49,10 +73,10 @@
         <span class="font-mono text-[0.65rem] tracking-[0.15em] text-[#e8c382]">VALUE RESEARCH DESK v3.0</span>
       </div>
       <h1 class="font-gloock text-5xl md:text-8xl leading-[0.9] text-white mb-6">
-        价值投资<br><span class="text-gradient-gold">研究终端</span>
+        投资<br><span class="text-gradient-gold">研究终端</span>
       </h1>
       <p class="font-manrope text-sm text-gray-500 max-w-xl leading-relaxed mb-8">
-        收集优质文章 → 判断信息可信度 → 深度分析公司 → 提炼投资洞见。不追逐短期价格，专注长期价值。
+        收集优质文章 · 判断信息可信度 · 深度分析公司 · 提炼投资洞见
       </p>
     </div>
   </div>
