@@ -136,17 +136,17 @@
     <div class="mb-10"><div class="font-mono text-[0.65rem] tracking-[0.2em] text-[#e8c382] mb-3">// SECTION_03</div>
       <h2 class="font-gloock text-4xl md:text-6xl text-white">公司估值<span class="text-gradient-gold"> VALUATION</span></h2>
       <p class="font-manrope text-sm text-gray-500 mt-3">
-        输入公司名或股票代码 → 护城河分析 + 财务健康 + 估值判断 + 安全边际<br>
-        <span class="text-gray-600 text-xs">用途：从价值投资角度判断一家公司值不值得深入研究</span>
+        输入公司名 → 财报深度拆解 + 价值投资估值 + 护城河评级<br>
+        <span class="text-gray-600 text-xs">用途：基于公开财报对一家公司进行专业基本面分析，不关注短期股价波动</span>
       </p></div>
 
     <div class="frame-section rounded-sm p-6 scanline-subtle mb-6">
       <div class="flex flex-wrap gap-4">
-        <input id="company-input" placeholder="公司名称或股票代码 (如 AAPL, 贵州茅台)"
+        <input id="company-input" placeholder="公司名称 (如 贵州茅台、Apple、台积电、ASML)"
           class="flex-1 min-w-[200px] bg-transparent border border-white/10 rounded-sm px-4 py-3 font-manrope text-sm text-white outline-none focus:border-[#e8c382] placeholder-gray-700">
         <button onclick="analyzeCompany()" id="btn-company"
           class="px-5 py-3 rounded-sm bg-[#e8c382] text-[#070707] font-mono text-xs tracking-widest font-semibold hover:bg-[#f0d89c] disabled:opacity-50">
-          💎 深度分析
+          💎 深度财报分析
         </button>
       </div>
       <span id="company-status" class="font-mono text-[0.55rem] text-gray-600 mt-2 inline-block"></span>
@@ -372,54 +372,68 @@ async function analyzeCompany() {
   const btn = document.getElementById('btn-company');
   const status = document.getElementById('company-status');
   const result = document.getElementById('company-result');
-  btn.disabled = true; status.textContent = '获取财务数据 + 价值投资分析中 (约30秒)...';
+  btn.disabled = true; status.textContent = '深度拆解财报中...';
   result.classList.remove('hidden');
-  result.innerHTML = '<div class="animate-pulse text-[#e8c382] font-mono text-sm py-8">正在分析...</div>';
+  result.innerHTML = '<div class="animate-pulse text-[#e8c382] font-mono text-sm py-8">正在拆解最新财报，进行价值投资估值...</div>';
 
   try {
-    // Fetch current price from Yahoo
-    let priceData = '';
-    try {
-      const r = await fetch(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(name)}?interval=1d&range=1y`);
-      const j = await r.json();
-      const m = j?.chart?.result?.[0]?.meta;
-      if (m) priceData = `当前股价: $${m.regularMarketPrice} | 52周高: $${m.fiftyTwoWeekHigh} | 52周低: $${m.fiftyTwoWeekLow}`;
-    } catch {}
+    const prompt = `请对 **${name}** 进行专业的价值投资基本面分析。不分析股价，只分析财报和商业模式。
 
-    const prompt = `请用价值投资框架深度分析：**${name}**
-${priceData ? '\n' + priceData : ''}
+使用最新可用财务数据(2025-2026)，完成：
 
-请使用你训练数据中最新可用的财务信息（2025-2026年数据），从以下维度分析：
+## 🏢 业务模式
+[一句话说清这家公司怎么赚钱 + 核心竞争力]
 
-请从以下维度分析：
+## 📊 收入与利润
+| 指标 | 最新财年 | 上一财年 | 3年前 | 趋势 |
+[营收、毛利、营业利润、净利润、EPS]
+- 增长由量驱动还是价驱动？利润率在扩张还是收缩？
 
-## 🏰 护城河分析
-[品牌、转换成本、网络效应、成本优势 — 这个公司有没有持久竞争优势？护城河在变宽还是变窄？]
+## 💎 资产负债表
+| 指标 | 数值 | 评价 |
+[资产负债率、流动比率、商誉/净资产、有息负债/EBITDA]
+- 轻资产还是重资产？银行抽贷能不能活？
 
-## 📊 财务健康
-[列出最新可用数据：ROIC、ROE、毛利率、净利率、负债/权益比、自由现金流。判断财务质量是优秀/良好/一般/危险]
+## 💵 现金流
+[经营现金流、资本支出、FCF、FCF/净利润]
+- 利润有多少是真金白银？FCF/净利润 > 0.8 = 优质
 
-## 💰 估值判断
-[当前PE、PB、PS、FCF yield是多少？相对历史5年均值和行业平均处于什么位置？贵不贵？]
+## 🏰 护城河
+[品牌|转换成本|网络效应|成本优势|规模经济 — 逐个打分]
+- 宽度：宽/中/窄/无 | 趋势：变宽/稳定/变窄
 
-## ⚠️ 风险与红旗
-[应收异常？关联交易？库存积压？商誉过高？管理层减持？行业逆风？]
+## 👔 管理层
+[资本配置|并购记录|分红回购|有无劣迹]
+- 评级：优秀/良好/一般/差
 
-## 🎯 安全边际
-[基于保守估值，跌到什么价位开始有安全边际？为什么是这个价格？]
+## 💰 内在价值
+1. DCF：假设增长X%、折现Y% → 每股内在价值
+2. 格雷厄姆公式：√(22.5×EPS×BVPS)
+3. 合理PE法：合理PE × 正常化EPS
+给出保守/中性/乐观三种情景的价值区间。
 
-## 📈 综合评分
-[1-10分，护城河/财务/估值/管理层 四个维度各多少分]
+## ⚠️ 风险
+[3-5个可能导致永久性资本损失的风险]
 
-引用具体的财务数字，标注数据年份。不确定处标注[推测]。中文。`;
+## 📈 综合评级
+| 护城河 | 财务 | 现金流 | 管理层 | 估值 |
+[各1-10分]
+**总分: ?/50**
 
-    const res = await callDS('你是资深价值投资者，精通巴菲特、芒格、格雷厄姆的投资框架。你善于从公开信息中识别护城河、判断财务质量、评估安全边际。', prompt);
-    result.innerHTML = `<div class="prose prose-invert max-w-none font-manrope text-sm leading-relaxed text-gray-300">${renderMD(res)}</div>`;
+## 🎯 结论
+[一句话：什么条件下值得买入？最大不确定性是什么？]
 
-    // Save to DB
-    const scoreMatch = res.match(/综合评分[：:]\s*(\d+)/);
+引用具体数字，标注年份。不确定标注[推测]。中文。`;
+
+    const res = await callDS(
+      '你是资深CFA持证分析师，精通价值投资。你精读财报，从数字背后看出商业模式质量。擅长DCF估值、护城河分析、管理层评估。报告专业、严谨、有深度。',
+      prompt, 0.3, 4096
+    );
+    result.innerHTML = `<div class="prose prose-invert max-w-none font-manrope text-sm leading-relaxed text-gray-300 [&_table]:w-full [&_table]:text-xs [&_table]:font-mono [&_th]:text-left [&_th]:text-[#e8c382] [&_th]:py-2 [&_th]:border-b [&_th]:border-white/10 [&_td]:py-2 [&_td]:border-b [&_td]:border-white/5">${renderMD(res)}</div>`;
+
+    const scoreMatch = res.match(/总分[：:]\s*\*?\*?(\d+)/);
     await db.from('company_analyses').insert({id:Date.now(),company_name:name,analysis:res,score:scoreMatch?parseInt(scoreMatch[1]):null,buy_range:'',risks:''});
-    status.textContent = '✅ 分析完成 · 已保存';
+    status.textContent = '✅ 财报分析完成 · 已保存';
   } catch(e) { result.innerHTML = `<div class="text-[#e61919]">${e.message}</div>`; status.textContent = '❌ 失败'; }
   finally { btn.disabled = false; }
 }
