@@ -565,7 +565,7 @@ function unlockVIP(){
   else{const m=document.getElementById('vip-msg2')||document.getElementById('vip-msg');if(m){m.textContent='无效VIP码';m.style.color='#e61919';}}
 }
 function logoutVIP(){localStorage.removeItem('vip_unlocked');updateAllVIPUI();}
-function purchaseVIP(tier){alert(`请通过微信/支付宝转账后联系客服获取VIP码\n\n${tier}会员\n\n客服联系方式：填写你的微信`);}
+function purchaseVIP(tier){const p={monthly:'¥29/月',yearly:'¥199/年',lifetime:'¥499永久'};alert(`📱 ${p[tier]||tier}\n\n请微信转账后联系客服获取VIP码\n\n微信号：wxid_msz1oritmsyd22\n\n转账备注：${tier}-${Date.now().toString(36)}\n\n24小时内发送VIP码`);}
 function updateAllVIPUI(){
   const badge = document.getElementById('vip-status-badge');
   const logoutBtn = document.getElementById('vip-logout-btn');
