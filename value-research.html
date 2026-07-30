@@ -350,7 +350,7 @@ function updateAuthUI(){
 loadUser();
 
 // Override VIP with profile-based
-function isVIP(){return currentProfile?.vip_status==='active'||localStorage.getItem('vip_unlocked')==='true';}
+function isVIP(){return currentProfile?.vip_status==='active';}
 async function submitPaymentRequest(tier){
   if(!currentUser){alert('请先登录');return;}
   const amounts={monthly:'29',yearly:'199',lifetime:'499'};
@@ -617,13 +617,18 @@ async function reviewHistory(event, whatif='') {
 <script>
 const VIP_CODES = ['VIP2026','MARKET01','GOLD2026'];
 function isVIP(){return localStorage.getItem('vip_unlocked')==='true';}
-function unlockVIP(){
+async function unlockVIP(){
+  if(!currentUser){alert('请先登录');return;}
   const el = document.getElementById('vip-code-input2') || document.getElementById('vip-code-input');
   const code = (el?.value||'').trim().toUpperCase();
-  if(VIP_CODES.includes(code)){localStorage.setItem('vip_unlocked','true');updateAllVIPUI();}
-  else{const m=document.getElementById('vip-msg2')||document.getElementById('vip-msg');if(m){m.textContent='无效VIP码';m.style.color='#e61919';}}
+  if(VIP_CODES.includes(code)){
+    const expiry=new Date();expiry.setDate(expiry.getDate()+365);
+    await db.from('profiles').upsert({id:currentUser.id,email:currentUser.email,vip_status:'active',vip_expiry:expiry.toISOString()});
+    await loadUser();
+    updateAllVIPUI();
+  }else{const m=document.getElementById('vip-msg2')||document.getElementById('vip-msg');if(m){m.textContent='无效VIP码';m.style.color='#e61919';}}
 }
-function logoutVIP(){localStorage.removeItem('vip_unlocked');updateAllVIPUI();}
+function logoutVIP(){if(currentUser){db.from('profiles').update({vip_status:'free',vip_expiry:null}).eq('id',currentUser.id);loadUser();updateAllVIPUI();}}
 function purchaseVIP(tier){submitPaymentRequest(tier);}
 function updateAllVIPUI(){
   const badge = document.getElementById('vip-status-badge');
