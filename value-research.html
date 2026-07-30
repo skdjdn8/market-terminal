@@ -359,7 +359,7 @@ async function submitPaymentRequest(tier){
   if(!currentUser){alert('请先登录');return;}
   const amounts={monthly:'29',yearly:'199',lifetime:'499'};
   await db.from('payment_requests').insert({id:Date.now(),user_id:currentUser.id,user_email:currentUser.email,tier,amount:amounts[tier]||''});
-  alert('支付申请已提交！\n\n请微信转账后联系客服\n微信号：wxid_msz1oritmsyd22\n\n客服审核后将为您开通VIP');
+  alert('支付申请已提交！\n\n请微信转账后联系客服\n微信号：wxid_msz1oritmsyd22（备注：VIP+套餐）\n\n客服审核后将为您开通VIP');
 }
 
 async function callDS(system, user, temp=0.3, maxTokens=2048) {
@@ -633,7 +633,29 @@ async function unlockVIP(){
   }else{const m=document.getElementById('vip-msg2')||document.getElementById('vip-msg');if(m){m.textContent='无效VIP码';m.style.color='#e61919';}}
 }
 function logoutVIP(){if(currentUser){db.from('profiles').update({vip_status:'free',vip_expiry:null}).eq('id',currentUser.id);loadUser();updateAllVIPUI();}}
-function purchaseVIP(tier){submitPaymentRequest(tier);}
+const QR_CODES = {monthly:'https://i.postimg.cc/cJbfCvz4/544fa96832b2949f6f992c4d7ad0fa24.jpg',yearly:'https://i.postimg.cc/yNdF7mvL/29439a43fe769f17104608bb57dbfc7a.jpg',lifetime:'https://i.postimg.cc/fy6dK1Ng/b76b3710f452fe6de5bde42b90de190b.jpg'};
+function purchaseVIP(tier){
+  if(!currentUser){alert('请先登录');return;}
+  const names={monthly:'月度会员 ¥29',yearly:'年度会员 ¥199',lifetime:'永久会员 ¥499'};
+  const qrModal=document.createElement('div');
+  qrModal.className='fixed inset-0 z-50 flex items-center justify-center p-4';
+  qrModal.style.background='rgba(0,0,0,.85)';qrModal.style.backdropFilter='blur(8px)';
+  qrModal.onclick=function(e){if(e.target===this)this.remove();};
+  qrModal.innerHTML=`<div class="frame-section rounded-sm p-6 max-w-sm w-full text-center" onclick="event.stopPropagation()">
+    <div class="flex justify-between mb-4"><div class="font-gloock text-xl text-white">${names[tier]}</div><button class="text-gray-500 hover:text-white text-lg" onclick="this.closest('.fixed').remove()">✕</button></div>
+    <img src="${QR_CODES[tier]}" alt="收款码" class="w-48 h-48 mx-auto mb-4 rounded-sm border border-white/10">
+    <div class="font-manrope text-xs text-gray-400 mb-4">微信扫码支付 · 支付后填写下方信息</div>
+    <input id="qr-nickname" placeholder="你的微信昵称" class="w-full bg-transparent border border-white/10 rounded-sm px-3 py-2 mb-2 font-mono text-sm text-white outline-none focus:border-[#e8c382]">
+    <input id="qr-txn" placeholder="转账单号（微信账单可查）" class="w-full bg-transparent border border-white/10 rounded-sm px-3 py-2 mb-4 font-mono text-sm text-white outline-none focus:border-[#e8c382]">
+    <button class="w-full py-2.5 rounded-sm bg-[#4af626] text-[#070707] font-mono text-sm font-semibold" onclick="confirmPayment('${tier}',document.getElementById('qr-nickname').value,document.getElementById('qr-txn').value,this.closest('.fixed'))">✅ 已支付，提交审核</button>
+    <div class="font-manrope text-xs text-gray-600 mt-3">微信号：wxid_msz1oritmsyd22 · 24小时内开通</div></div>`;
+  document.body.appendChild(qrModal);
+}
+async function confirmPayment(tier,nickname,txn,modal){
+  if(!nickname.trim()){alert('请填写微信昵称');return;}
+  const amounts={monthly:'29',yearly:'199',lifetime:'499'};
+  await db.from('payment_requests').insert({id:Date.now(),user_id:currentUser.id,user_email:currentUser.email+' ('+nickname+')',tier,amount:amounts[tier]||'',status:'pending'});
+  modal.remove();alert('✅ 已提交！客服核对后将为您开通VIP\n\n微信号：wxid_msz1oritmsyd22');}
 function updateAllVIPUI(){
   const badge = document.getElementById('vip-status-badge');
   const logoutBtn = document.getElementById('vip-logout-btn');
