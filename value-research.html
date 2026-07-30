@@ -130,6 +130,26 @@
   </div>
 </section>
 
+<!-- Reading Detail Modal -->
+<div id="reading-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,0,0,.85);backdrop-filter:blur(8px)" onclick="if(event.target===this)this.classList.add('hidden')">
+  <div class="frame-section rounded-sm p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
+    <div class="flex items-center justify-between mb-6">
+      <div class="font-mono text-[0.55rem] tracking-[0.15em] text-gray-500" id="modal-cat"></div>
+      <button onclick="document.getElementById('reading-modal').classList.add('hidden')" class="font-mono text-sm text-gray-500 hover:text-white">✕</button>
+    </div>
+    <h2 class="font-gloock text-2xl text-white mb-2" id="modal-title"></h2>
+    <a id="modal-url" href="#" target="_blank" class="font-mono text-[0.55rem] text-[#e8c382] hover:underline mb-4 inline-block">原文链接 →</a>
+    <div class="font-manrope text-sm text-gray-300 leading-relaxed mb-6" id="modal-summary"></div>
+    <div class="border-t border-white/10 pt-4">
+      <div class="font-mono text-[0.5rem] tracking-wider text-gray-500 mb-2">📝 我的笔记</div>
+      <textarea id="modal-notes" placeholder="写读后感..."
+        class="w-full bg-transparent border border-white/10 rounded-sm p-3 font-manrope text-sm text-white outline-none focus:border-[#e8c382] resize-none mb-3" rows="4"></textarea>
+      <button onclick="saveReadingNotes()" id="btn-save-notes" class="px-4 py-2 rounded-sm bg-[#e8c382] text-[#070707] font-mono text-xs tracking-wider font-semibold">保存笔记</button>
+      <span id="modal-notes-status" class="font-mono text-[0.55rem] text-gray-600 ml-3"></span>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════════════════════════ SECTION 3: COMPANY ANALYSIS ═══════════════════════════════════ -->
 <section id="company" class="py-20 border-t border-white/[0.03]">
   <div class="max-w-7xl mx-auto px-6">
@@ -152,6 +172,14 @@
       <span id="company-status" class="font-mono text-[0.55rem] text-gray-600 mt-2 inline-block"></span>
     </div>
     <div id="company-result" class="hidden frame-section rounded-sm p-6"></div>
+  </div>
+</section>
+
+<!-- ── Saved Analyses ── -->
+    <div class="mt-10 pt-6 border-t border-white/[0.05]">
+      <div class="flex items-center justify-between mb-4"><div class="font-mono text-[0.6rem] tracking-[0.15em] text-gray-500">已保存的公司分析</div><button onclick="loadSavedAnalyses()" class="font-mono text-[0.5rem] text-gray-600 hover:text-[#e8c382]">刷新</button></div>
+      <div id="saved-analyses" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+    </div>
   </div>
 </section>
 
@@ -344,12 +372,13 @@ async function loadReadingList() {
 function renderReadingCards(data) {
   const grid = document.getElementById('reading-grid');
   grid.innerHTML = data.map(d=>`
-    <div class="data-card frame-section rounded-sm p-5 relative overflow-hidden group">
-      <div class="font-mono text-[0.5rem] tracking-[0.1em] text-gray-600 mb-2">${d.category||'未分类'} · ${new Date(d.created_at).toLocaleDateString('zh-CN')}</div>
+    <div class="data-card frame-section rounded-sm p-5 relative overflow-hidden group cursor-pointer" onclick="openReadingDetail(${d.id})">
+      <div class="card-glow"></div>
+      <div class="font-mono text-[0.5rem] tracking-[0.1em] text-gray-600 mb-2">${d.category||'未分类'} · ${new Date(d.created_at).toLocaleDateString('zh-CN')}${d.notes?' · 📝 有笔记':''}</div>
       <div class="font-gloock text-lg text-white mb-2">${escapeHtml(d.title)}</div>
       <div class="font-manrope text-xs text-gray-500 line-clamp-3">${escapeHtml((d.summary||'').slice(0,200))}</div>
-      ${d.url?`<a href="${d.url}" target="_blank" class="font-mono text-[0.55rem] text-[#e8c382] mt-2 inline-block hover:underline">原文链接 →</a>`:''}
-      <div class="flex gap-2 mt-3 pt-3 border-t border-white/5 opacity-0 group-hover:opacity-100 transition-opacity">
+      ${d.url?`<span class="font-mono text-[0.55rem] text-[#e8c382] mt-2 inline-block">原文链接 →</span>`:''}
+      <div class="flex gap-2 mt-3 pt-3 border-t border-white/5 opacity-0 group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
         <button onclick="deleteReading(${d.id})" class="font-mono text-[0.5rem] text-gray-500 hover:text-[#e61919]">删除</button>
       </div>
     </div>`).join('');
@@ -361,7 +390,33 @@ async function deleteReading(id) { if(confirm('删除？')){await db.from('readi
 
 function escapeHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 
+// Reading detail modal
+let currentReadingId = null;
+async function openReadingDetail(id) {
+  const { data } = await db.from('reading_list').select('*').eq('id', id).single();
+  if (!data) return;
+  currentReadingId = id;
+  document.getElementById('modal-cat').textContent = (data.category || '未分类') + ' · ' + new Date(data.created_at).toLocaleDateString('zh-CN');
+  document.getElementById('modal-title').textContent = data.title;
+  document.getElementById('modal-url').href = data.url || '#';
+  document.getElementById('modal-url').style.display = data.url ? 'inline-block' : 'none';
+  document.getElementById('modal-summary').textContent = data.summary || '暂无摘要';
+  document.getElementById('modal-notes').value = data.notes || '';
+  document.getElementById('modal-notes-status').textContent = '';
+  document.getElementById('reading-modal').classList.remove('hidden');
+}
+
+async function saveReadingNotes() {
+  if (!currentReadingId) return;
+  const notes = document.getElementById('modal-notes').value;
+  await db.from('reading_list').update({ notes }).eq('id', currentReadingId);
+  document.getElementById('modal-notes-status').textContent = '✅ 已保存';
+  loadReadingList();
+  setTimeout(() => { document.getElementById('modal-notes-status').textContent = ''; }, 2000);
+}
+
 loadReadingList();
+
 </script>
 
 <!-- ── COMPANY ANALYSIS ── -->
@@ -437,6 +492,24 @@ async function analyzeCompany() {
   } catch(e) { result.innerHTML = `<div class="text-[#e61919]">${e.message}</div>`; status.textContent = '❌ 失败'; }
   finally { btn.disabled = false; }
 }
+</script>
+
+<!-- ── SAVED ANALYSES ── -->
+<script>
+async function loadSavedAnalyses() {
+  const container = document.getElementById('saved-analyses');
+  const { data } = await db.from('company_analyses').select('*').order('created_at',{ascending:false}).limit(9);
+  if (!data || !data.length) { container.innerHTML = '<div class="col-span-full text-gray-600 font-mono text-xs py-4">暂无保存的分析</div>'; return; }
+  container.innerHTML = data.map(d=>`<div class="data-card frame-section rounded-sm p-4 cursor-pointer" onclick="viewSavedAnalysis(${d.id})"><div class="font-gloock text-lg text-white">${escapeHtml(d.company_name)}</div><div class="font-mono text-[0.5rem] text-gray-600 mt-1">${new Date(d.created_at).toLocaleDateString('zh-CN')} · 评分 ${d.score||'?'}/50</div></div>`).join('');
+}
+async function viewSavedAnalysis(id) {
+  const { data } = await db.from('company_analyses').select('*').eq('id',id).single();
+  if (!data) return;
+  document.getElementById('company-result').classList.remove('hidden');
+  document.getElementById('company-result').innerHTML = `<div class="font-mono text-[0.55rem] text-gray-500 mb-3">📋 ${data.company_name} · ${new Date(data.created_at).toLocaleString('zh-CN')}</div><div class="prose prose-invert max-w-none font-manrope text-sm leading-relaxed text-gray-300 [&_table]:w-full [&_table]:text-xs [&_table]:font-mono [&_th]:text-left [&_th]:text-[#e8c382] [&_th]:py-2 [&_th]:border-b [&_th]:border-white/10 [&_td]:py-2 [&_td]:border-b [&_td]:border-white/5">${renderMD(data.analysis)}</div>`;
+  document.getElementById('company').scrollIntoView({behavior:'smooth'});
+}
+loadSavedAnalyses();
 </script>
 
 <!-- ── HISTORY REVIEW ── -->
