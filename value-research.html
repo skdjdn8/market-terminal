@@ -91,6 +91,50 @@
   </div>
 </section>
 
+<!-- ═══════════════════════════════════ VIP RECHARGE CENTER ═══════════════════════════════════ -->
+<section id="vip" class="py-16 border-t border-white/[0.03]">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="frame-section rounded-sm p-8">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Status -->
+        <div>
+          <div class="font-mono text-[0.55rem] tracking-[0.15em] text-gray-500 mb-2">👑 VIP 状态</div>
+          <div class="font-bebas text-4xl tracking-tight text-gradient-gold mb-1" id="vip-status-badge">未激活</div>
+          <div class="font-manrope text-sm text-gray-400">解锁全部研究功能</div>
+          <div class="mt-4"><button onclick="document.getElementById('vip-code-section').classList.toggle('hidden')" class="font-mono text-[0.55rem] text-gray-500 hover:text-[#e8c382]">🔑 已有VIP码？点此激活</button></div>
+          <div id="vip-code-section" class="hidden mt-3 flex gap-2">
+            <input id="vip-code-input2" type="text" placeholder="输入VIP码" class="flex-1 bg-transparent border border-white/10 rounded-sm px-3 py-2 font-mono text-xs text-white outline-none focus:border-[#e8c382]" onkeydown="if(event.key==='Enter')unlockVIP()">
+            <button onclick="unlockVIP()" class="px-3 py-2 rounded-sm bg-[#e8c382] text-[#070707] font-mono text-xs">激活</button>
+          </div>
+          <div class="font-mono text-[0.5rem] text-gray-600 mt-2" id="vip-msg2"></div>
+          <div class="hidden mt-3" id="vip-logout-btn"><a href="javascript:logoutVIP()" class="font-mono text-[0.5rem] text-gray-600 hover:text-white">退出VIP</a></div>
+        </div>
+        <!-- Pricing -->
+        <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div class="border border-white/10 rounded-sm p-5 text-center hover:border-[#e8c382]/30 transition-colors">
+            <div class="font-mono text-[0.5rem] tracking-wider text-gray-500 mb-2">月度会员</div>
+            <div class="font-bebas text-4xl text-white">¥29<span class="font-manrope text-sm text-gray-500">/月</span></div>
+            <div class="font-manrope text-[0.6rem] text-gray-500 mt-2">全功能解锁 · 每日研报</div>
+            <button onclick="purchaseVIP('monthly')" class="mt-4 px-4 py-2 rounded-sm bg-[#e8c382] text-[#070707] font-mono text-xs tracking-wider font-semibold hover:bg-[#f0d89c] w-full">购买</button>
+          </div>
+          <div class="border border-[#e8c382]/30 rounded-sm p-5 text-center bg-[#e8c382]/5">
+            <div class="font-mono text-[0.5rem] tracking-wider text-[#e8c382] mb-2">年度会员 · 推荐</div>
+            <div class="font-bebas text-4xl text-white">¥199<span class="font-manrope text-sm text-gray-500">/年</span></div>
+            <div class="font-manrope text-[0.6rem] text-gray-500 mt-2">省 43% · 全功能 · 优先支持</div>
+            <button onclick="purchaseVIP('yearly')" class="mt-4 px-4 py-2 rounded-sm bg-[#e8c382] text-[#070707] font-mono text-xs tracking-wider font-semibold hover:bg-[#f0d89c] w-full">购买</button>
+          </div>
+          <div class="border border-white/10 rounded-sm p-5 text-center hover:border-[#e8c382]/30 transition-colors">
+            <div class="font-mono text-[0.5rem] tracking-wider text-gray-500 mb-2">永久会员</div>
+            <div class="font-bebas text-4xl text-white">¥499</div>
+            <div class="font-manrope text-[0.6rem] text-gray-500 mt-2">一次付费 · 永久有效</div>
+            <button onclick="purchaseVIP('lifetime')" class="mt-4 px-4 py-2 rounded-sm border border-[#e8c382] text-[#e8c382] font-mono text-xs tracking-wider font-semibold hover:bg-[#e8c382] hover:text-[#070707] w-full transition-colors">购买</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ═══════════════════════════════════ SECTION 1: ARTICLE ANALYZER ═══════════════════════════════════ -->
 <section id="analyze" class="py-20 border-t border-white/[0.03]">
   <div class="max-w-7xl mx-auto px-6">
@@ -130,26 +174,6 @@
   </div>
 </section>
 
-<!-- Reading Detail Modal -->
-<div id="reading-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,0,0,.85);backdrop-filter:blur(8px)" onclick="if(event.target===this)this.classList.add('hidden')">
-  <div class="frame-section rounded-sm p-8 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-    <div class="flex items-center justify-between mb-6">
-      <div class="font-mono text-[0.55rem] tracking-[0.15em] text-gray-500" id="modal-cat"></div>
-      <button onclick="document.getElementById('reading-modal').classList.add('hidden')" class="font-mono text-sm text-gray-500 hover:text-white">✕</button>
-    </div>
-    <h2 class="font-gloock text-2xl text-white mb-2" id="modal-title"></h2>
-    <a id="modal-url" href="#" target="_blank" class="font-mono text-[0.55rem] text-[#e8c382] hover:underline mb-4 inline-block">原文链接 →</a>
-    <div class="font-manrope text-sm text-gray-300 leading-relaxed mb-6" id="modal-summary"></div>
-    <div class="border-t border-white/10 pt-4">
-      <div class="font-mono text-[0.5rem] tracking-wider text-gray-500 mb-2">📝 我的笔记</div>
-      <textarea id="modal-notes" placeholder="写读后感..."
-        class="w-full bg-transparent border border-white/10 rounded-sm p-3 font-manrope text-sm text-white outline-none focus:border-[#e8c382] resize-none mb-3" rows="4"></textarea>
-      <button onclick="saveReadingNotes()" id="btn-save-notes" class="px-4 py-2 rounded-sm bg-[#e8c382] text-[#070707] font-mono text-xs tracking-wider font-semibold">保存笔记</button>
-      <span id="modal-notes-status" class="font-mono text-[0.55rem] text-gray-600 ml-3"></span>
-    </div>
-  </div>
-</div>
-
 <!-- ═══════════════════════════════════ SECTION 3: COMPANY ANALYSIS ═══════════════════════════════════ -->
 <section id="company" class="py-20 border-t border-white/[0.03]">
   <div class="max-w-7xl mx-auto px-6">
@@ -172,14 +196,6 @@
       <span id="company-status" class="font-mono text-[0.55rem] text-gray-600 mt-2 inline-block"></span>
     </div>
     <div id="company-result" class="hidden frame-section rounded-sm p-6"></div>
-  </div>
-</section>
-
-<!-- ── Saved Analyses ── -->
-    <div class="mt-10 pt-6 border-t border-white/[0.05]">
-      <div class="flex items-center justify-between mb-4"><div class="font-mono text-[0.6rem] tracking-[0.15em] text-gray-500">已保存的公司分析</div><button onclick="loadSavedAnalyses()" class="font-mono text-[0.5rem] text-gray-600 hover:text-[#e8c382]">刷新</button></div>
-      <div id="saved-analyses" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
-    </div>
   </div>
 </section>
 
@@ -303,7 +319,10 @@ function renderMD(md) {
 <script>
 let lastAnalysis = null;
 
+function requireVIP(){if(!isVIP()){alert('请先开通VIP会员');document.getElementById('vip').scrollIntoView({behavior:'smooth'});return false;}return true;}
+
 async function analyzeArticle() {
+  if(!requireVIP()) return;
   const input = document.getElementById('article-input').value.trim();
   if (!input) return;
   const btn = document.getElementById('btn-analyze');
@@ -372,13 +391,13 @@ async function loadReadingList() {
 function renderReadingCards(data) {
   const grid = document.getElementById('reading-grid');
   grid.innerHTML = data.map(d=>`
-    <div class="data-card frame-section rounded-sm p-5 relative overflow-hidden group cursor-pointer" onclick="openReadingDetail(${d.id})">
+    <div class="data-card frame-section rounded-sm p-5 relative overflow-hidden group">
       <div class="card-glow"></div>
-      <div class="font-mono text-[0.5rem] tracking-[0.1em] text-gray-600 mb-2">${d.category||'未分类'} · ${new Date(d.created_at).toLocaleDateString('zh-CN')}${d.notes?' · 📝 有笔记':''}</div>
+      <div class="font-mono text-[0.5rem] tracking-[0.1em] text-gray-600 mb-2">${d.category||'未分类'} · ${new Date(d.created_at).toLocaleDateString('zh-CN')}</div>
       <div class="font-gloock text-lg text-white mb-2">${escapeHtml(d.title)}</div>
       <div class="font-manrope text-xs text-gray-500 line-clamp-3">${escapeHtml((d.summary||'').slice(0,200))}</div>
-      ${d.url?`<span class="font-mono text-[0.55rem] text-[#e8c382] mt-2 inline-block">原文链接 →</span>`:''}
-      <div class="flex gap-2 mt-3 pt-3 border-t border-white/5 opacity-0 group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
+      ${d.url?`<a href="${d.url}" target="_blank" class="font-mono text-[0.55rem] text-[#e8c382] mt-2 inline-block hover:underline">原文链接 →</a>`:''}
+      <div class="flex gap-2 mt-3 pt-3 border-t border-white/5 opacity-0 group-hover:opacity-100 transition-opacity">
         <button onclick="deleteReading(${d.id})" class="font-mono text-[0.5rem] text-gray-500 hover:text-[#e61919]">删除</button>
       </div>
     </div>`).join('');
@@ -390,31 +409,6 @@ async function deleteReading(id) { if(confirm('删除？')){await db.from('readi
 
 function escapeHtml(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 
-// Reading detail modal
-let currentReadingId = null;
-async function openReadingDetail(id) {
-  const { data } = await db.from('reading_list').select('*').eq('id', id).single();
-  if (!data) return;
-  currentReadingId = id;
-  document.getElementById('modal-cat').textContent = (data.category || '未分类') + ' · ' + new Date(data.created_at).toLocaleDateString('zh-CN');
-  document.getElementById('modal-title').textContent = data.title;
-  document.getElementById('modal-url').href = data.url || '#';
-  document.getElementById('modal-url').style.display = data.url ? 'inline-block' : 'none';
-  document.getElementById('modal-summary').textContent = data.summary || '暂无摘要';
-  document.getElementById('modal-notes').value = data.notes || '';
-  document.getElementById('modal-notes-status').textContent = '';
-  document.getElementById('reading-modal').classList.remove('hidden');
-}
-
-async function saveReadingNotes() {
-  if (!currentReadingId) return;
-  const notes = document.getElementById('modal-notes').value;
-  await db.from('reading_list').update({ notes }).eq('id', currentReadingId);
-  document.getElementById('modal-notes-status').textContent = '✅ 已保存';
-  loadReadingList();
-  setTimeout(() => { document.getElementById('modal-notes-status').textContent = ''; }, 2000);
-}
-
 loadReadingList();
 
 </script>
@@ -422,6 +416,7 @@ loadReadingList();
 <!-- ── COMPANY ANALYSIS ── -->
 <script>
 async function analyzeCompany() {
+  if(!requireVIP()) return;
   const name = document.getElementById('company-input').value.trim();
   if (!name) return;
   const btn = document.getElementById('btn-company');
@@ -515,6 +510,7 @@ loadSavedAnalyses();
 <!-- ── HISTORY REVIEW ── -->
 <script>
 async function reviewHistory(event, whatif='') {
+  if(!requireVIP()) return;
   if (!event.trim()) return;
   const btn = document.getElementById('btn-history');
   const status = document.getElementById('history-status');
@@ -563,20 +559,34 @@ async function reviewHistory(event, whatif='') {
 const VIP_CODES = ['VIP2026','MARKET01','GOLD2026'];
 function isVIP(){return localStorage.getItem('vip_unlocked')==='true';}
 function unlockVIP(){
-  const code = document.getElementById('vip-code-input').value.trim().toUpperCase();
-  if(VIP_CODES.includes(code)){localStorage.setItem('vip_unlocked','true');updateVIPUI();}
-  else{document.getElementById('vip-msg').textContent='无效VIP码';document.getElementById('vip-msg').style.color='#e61919';}
+  const el = document.getElementById('vip-code-input2') || document.getElementById('vip-code-input');
+  const code = (el?.value||'').trim().toUpperCase();
+  if(VIP_CODES.includes(code)){localStorage.setItem('vip_unlocked','true');updateAllVIPUI();}
+  else{const m=document.getElementById('vip-msg2')||document.getElementById('vip-msg');if(m){m.textContent='无效VIP码';m.style.color='#e61919';}}
 }
-function logoutVIP(){localStorage.removeItem('vip_unlocked');updateVIPUI();}
-function updateVIPUI(){
-  if(isVIP()){document.getElementById('vip-lock').classList.add('hidden');document.getElementById('vip-controls').classList.remove('hidden');}
-  else{document.getElementById('vip-lock').classList.remove('hidden');document.getElementById('vip-controls').classList.add('hidden');}
+function logoutVIP(){localStorage.removeItem('vip_unlocked');updateAllVIPUI();}
+function purchaseVIP(tier){alert(`请通过微信/支付宝转账后联系客服获取VIP码\n\n${tier}会员\n\n客服联系方式：填写你的微信`);}
+function updateAllVIPUI(){
+  const badge = document.getElementById('vip-status-badge');
+  const logoutBtn = document.getElementById('vip-logout-btn');
+  if(isVIP()){
+    if(badge){badge.textContent='已激活 👑';badge.style.color='#4af626';}
+    if(logoutBtn)logoutBtn.classList.remove('hidden');
+    const lock=document.getElementById('vip-lock'); if(lock)lock.classList.add('hidden');
+    const ctrl=document.getElementById('vip-controls'); if(ctrl)ctrl.classList.remove('hidden');
+  } else {
+    if(badge){badge.textContent='未激活';badge.style.color='#e8c382';}
+    if(logoutBtn)logoutBtn.classList.add('hidden');
+    const lock=document.getElementById('vip-lock'); if(lock)lock.classList.remove('hidden');
+    const ctrl=document.getElementById('vip-controls'); if(ctrl)ctrl.classList.add('hidden');
+  }
 }
 function openVIPAdmin(){
   const pw=prompt('管理密码:');if(pw!=='admin888')return;
   const codes=prompt('VIP码列表（每行一个）:',VIP_CODES.join('\n'));
-  if(codes) alert('已更新 '+codes.split('\n').filter(Boolean).length+' 个码');
+  if(codes){const arr=codes.split('\n').map(s=>s.trim().toUpperCase()).filter(Boolean);VIP_CODES.length=0;VIP_CODES.push(...arr);alert('已更新 '+VIP_CODES.length+' 个码');}
 }
+updateAllVIPUI();
 
 async function generateOutlook() {
   const btn = document.getElementById('btn-outlook');
