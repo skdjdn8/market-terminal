@@ -57,6 +57,7 @@
       <a href="#analyze" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382]">// 分析</a>
       <a href="#reading" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382]">// 阅读</a>
       <a href="#company" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382]">// 估值</a>
+      <a href="#history" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382]">// 复盘</a>
       <a href="#outlook" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382]">// 展望</a>
       <a href="#notes" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382]">// 随笔</a>
     </nav>
@@ -148,10 +149,43 @@
   </div>
 </section>
 
-<!-- ═══════════════════════════════════ SECTION 4: OUTLOOK ═══════════════════════════════════ -->
-<section id="outlook" class="py-20 border-t border-white/[0.03]">
+<!-- ═══════════════════════════════════ SECTION 3.5: HISTORY REVIEW ═══════════════════════════════════ -->
+<section id="history" class="py-20 border-t border-white/[0.03]">
   <div class="max-w-7xl mx-auto px-6">
     <div class="mb-10"><div class="font-mono text-[0.65rem] tracking-[0.2em] text-[#e8c382] mb-3">// SECTION_04</div>
+      <h2 class="font-gloock text-4xl md:text-6xl text-white">历史复盘<span class="text-gradient-gold"> HISTORY</span></h2>
+      <p class="font-manrope text-sm text-gray-500 mt-3">选择历史事件 → AI 深度复盘：起因、经过、教训、当下启示</p></div>
+
+    <!-- Preset events -->
+    <div class="flex flex-wrap gap-2 mb-6">
+      <button onclick="reviewHistory('2008年全球金融危机')" class="px-4 py-2 rounded-sm border border-white/10 font-mono text-[0.6rem] text-gray-400 hover:text-[#e8c382] hover:border-[#e8c382]/30 transition-colors">🏦 2008 金融危机</button>
+      <button onclick="reviewHistory('2020年原油价格暴跌至负值')" class="px-4 py-2 rounded-sm border border-white/10 font-mono text-[0.6rem] text-gray-400 hover:text-[#e8c382] hover:border-[#e8c382]/30 transition-colors">🛢️ 2020 负油价</button>
+      <button onclick="reviewHistory('2022年美联储暴力加息')" class="px-4 py-2 rounded-sm border border-white/10 font-mono text-[0.6rem] text-gray-400 hover:text-[#e8c382] hover:border-[#e8c382]/30 transition-colors">📈 2022 加息周期</button>
+      <button onclick="reviewHistory('2020年新冠疫情市场崩盘')" class="px-4 py-2 rounded-sm border border-white/10 font-mono text-[0.6rem] text-gray-400 hover:text-[#e8c382] hover:border-[#e8c382]/30 transition-colors">🦠 2020 新冠崩盘</button>
+      <button onclick="reviewHistory('2015年中国股灾')" class="px-4 py-2 rounded-sm border border-white/10 font-mono text-[0.6rem] text-gray-400 hover:text-[#e8c382] hover:border-[#e8c382]/30 transition-colors">🇨🇳 2015 股灾</button>
+      <button onclick="reviewHistory('2000年互联网泡沫破裂')" class="px-4 py-2 rounded-sm border border-white/10 font-mono text-[0.6rem] text-gray-400 hover:text-[#e8c382] hover:border-[#e8c382]/30 transition-colors">💻 2000 互联网泡沫</button>
+    </div>
+
+    <!-- Custom input -->
+    <div class="frame-section rounded-sm p-6 scanline-subtle mb-6">
+      <div class="flex gap-3">
+        <input id="history-input" placeholder="或输入自定义事件..."
+          class="flex-1 bg-transparent border border-white/10 rounded-sm px-4 py-3 font-manrope text-sm text-white outline-none focus:border-[#e8c382] placeholder-gray-700">
+        <button onclick="reviewHistory(document.getElementById('history-input').value)" id="btn-history"
+          class="px-5 py-3 rounded-sm bg-[#e8c382] text-[#070707] font-mono text-xs tracking-widest font-semibold hover:bg-[#f0d89c] disabled:opacity-50">
+          📜 复盘
+        </button>
+      </div>
+      <span id="history-status" class="font-mono text-[0.55rem] text-gray-600 mt-2 inline-block"></span>
+    </div>
+    <div id="history-result" class="hidden frame-section rounded-sm p-6"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════ SECTION 5: OUTLOOK ═══════════════════════════════════ -->
+<section id="outlook" class="py-20 border-t border-white/[0.03]">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="mb-10"><div class="font-mono text-[0.65rem] tracking-[0.2em] text-[#e8c382] mb-3">// SECTION_05</div>
       <h2 class="font-gloock text-4xl md:text-6xl text-white">展望预测<span class="text-gradient-gold"> OUTLOOK</span></h2></div>
 
     <!-- VIP Gate -->
@@ -174,7 +208,7 @@
 <!-- ═══════════════════════════════════ SECTION 5: NOTES ═══════════════════════════════════ -->
 <section id="notes" class="py-20 border-t border-white/[0.03]">
   <div class="max-w-7xl mx-auto px-6">
-    <div class="mb-10"><div class="font-mono text-[0.65rem] tracking-[0.2em] text-[#e8c382] mb-3">// SECTION_05</div>
+    <div class="mb-10"><div class="font-mono text-[0.65rem] tracking-[0.2em] text-[#e8c382] mb-3">// SECTION_06</div>
       <h2 class="font-gloock text-4xl md:text-6xl text-white">随笔<span class="text-gradient-gold"> NOTES</span></h2></div>
     <button onclick="openNoteEditor()" class="px-5 py-2.5 rounded-sm bg-[#e8c382] text-[#070707] font-mono text-xs tracking-widest font-semibold mb-6">✏️ 新建随笔</button>
     <div id="note-editor" class="hidden frame-section rounded-sm p-6 mb-6">
@@ -362,6 +396,27 @@ async function analyzeCompany() {
     const scoreMatch = res.match(/综合评分[：:]\s*(\d+)/);
     await db.from('company_analyses').insert({id:Date.now(),company_name:name,analysis:res,score:scoreMatch?parseInt(scoreMatch[1]):null,buy_range:'',risks:''});
     status.textContent = '✅ 分析完成 · 已保存';
+  } catch(e) { result.innerHTML = `<div class="text-[#e61919]">${e.message}</div>`; status.textContent = '❌ 失败'; }
+  finally { btn.disabled = false; }
+}
+</script>
+
+<!-- ── HISTORY REVIEW ── -->
+<script>
+async function reviewHistory(event) {
+  if (!event.trim()) return;
+  const btn = document.getElementById('btn-history');
+  const status = document.getElementById('history-status');
+  const result = document.getElementById('history-result');
+  btn.disabled = true; status.textContent = '深度复盘分析中...';
+  result.classList.remove('hidden');
+  result.innerHTML = '<div class="animate-pulse text-[#e8c382] font-mono text-sm py-8">AI 正在分析该历史事件...</div>';
+
+  try {
+    const prompt = `请复盘：**${event}**\n\n输出：## 📜 事件背景\n## ⏱ 时间线\n## 🔍 根本原因\n## 📉 市场影响\n## 💡 核心教训\n## 🔗 与当下的关联\n## 📚 推荐阅读\n\n中文，数据精确。`;
+    const res = await callDS('你是资深金融历史学家，擅长对市场重大事件进行深度复盘。分析严谨、数据扎实，能从历史中提炼对当下有价值的投资洞见。', prompt);
+    result.innerHTML = `<div class="prose prose-invert max-w-none font-manrope text-sm leading-relaxed text-gray-300">${renderMD(res)}</div>`;
+    status.textContent = '✅ 复盘完成';
   } catch(e) { result.innerHTML = `<div class="text-[#e61919]">${e.message}</div>`; status.textContent = '❌ 失败'; }
   finally { btn.disabled = false; }
 }
