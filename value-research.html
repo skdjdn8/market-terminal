@@ -280,21 +280,16 @@
         <span class="text-gray-600 text-xs">可添加假设条件做场景分析：如果伊朗封锁海峡？如果美联储降息200bp？</span>
       </p></div>
 
-    <!-- VIP Gate -->
-    <div id="vip-lock" class="frame-section rounded-sm p-6 scanline-subtle mb-6">
-      <div class="flex items-center gap-3 mb-4">
-        <iconify-icon icon="solar:shield-star-linear" class="text-[#e8c382] text-2xl"></iconify-icon>
-        <div><div class="font-gloock text-xl text-[#e8c382]">VIP 专属功能</div></div>
+    <!-- Outlook Form -->
+    <div class="frame-section rounded-sm p-6 scanline-subtle mb-6 relative">
+      <div id="lock-outlook" class="vip-lock-overlay absolute inset-0 z-10 flex items-center justify-center rounded-sm" style="background:rgba(7,7,7,.9)">
+        <div class="text-center"><iconify-icon icon="solar:lock-linear" class="text-4xl text-[#e8c382] mb-2"></iconify-icon><div class="font-mono text-sm text-gray-400 mb-1">VIP 专属功能</div><div class="font-manrope text-xs text-gray-600"><a href="#vip" class="text-[#e8c382] hover:underline">开通VIP</a> 或 <a href="javascript:showAuthModal('login')" class="text-[#e8c382] hover:underline">登录</a></div></div>
       </div>
-      <div class="flex items-center gap-3"><input id="vip-code-input" type="text" placeholder="输入 VIP 码..." class="flex-1 bg-transparent border border-white/10 rounded-sm px-4 py-2.5 font-mono text-sm text-white outline-none focus:border-[#e8c382]" onkeydown="if(event.key==='Enter')unlockVIP()"><button onclick="unlockVIP()" class="px-6 py-2.5 rounded-sm bg-[#e8c382] text-[#070707] font-mono text-xs tracking-widest font-semibold">🔓 解锁</button></div>
-      <div class="font-mono text-[0.55rem] text-gray-600 mt-3" id="vip-msg"></div>
-    </div>
-    <div id="vip-controls" class="hidden">
       <input id="outlook-scenario" placeholder="🎯 假设条件（可选）：如果伊朗长期封锁霍尔木兹海峡？如果中国推出10万亿刺激？"
         class="w-full bg-transparent border border-white/10 rounded-sm px-4 py-3 font-manrope text-sm text-white outline-none focus:border-[#e8c382] placeholder-gray-600 italic mb-4">
       <button onclick="generateOutlook()" id="btn-outlook" class="px-5 py-2.5 rounded-sm bg-[#e8c382] text-[#070707] font-mono text-xs tracking-widest font-semibold hover:bg-[#f0d89c] mb-6">📊 生成展望报告</button>
       <div id="outlook-result" class="frame-section rounded-sm p-6"></div>
-      <span class="font-mono text-[0.5rem] text-gray-600 mt-2 inline-block">👑 VIP · <a href="javascript:logoutVIP()" class="hover:text-white">退出</a></span>
+    </div>
     </div>
   </div>
 </section>
@@ -642,16 +637,15 @@ function purchaseVIP(tier){submitPaymentRequest(tier);}
 function updateAllVIPUI(){
   const badge = document.getElementById('vip-status-badge');
   const logoutBtn = document.getElementById('vip-logout-btn');
+  const locks = document.querySelectorAll('.vip-lock-overlay');
   if(isVIP()){
     if(badge){badge.textContent='已激活 👑';badge.style.color='#4af626';}
     if(logoutBtn)logoutBtn.classList.remove('hidden');
-    const lock=document.getElementById('vip-lock'); if(lock)lock.classList.add('hidden');
-    const ctrl=document.getElementById('vip-controls'); if(ctrl)ctrl.classList.remove('hidden');
+    locks.forEach(l=>l.classList.add('hidden'));
   } else {
     if(badge){badge.textContent='未激活';badge.style.color='#e8c382';}
     if(logoutBtn)logoutBtn.classList.add('hidden');
-    const lock=document.getElementById('vip-lock'); if(lock)lock.classList.remove('hidden');
-    const ctrl=document.getElementById('vip-controls'); if(ctrl)ctrl.classList.add('hidden');
+    locks.forEach(l=>l.classList.remove('hidden'));
   }
 }
 async function openPaymentAdmin(){
