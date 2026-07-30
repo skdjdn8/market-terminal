@@ -281,8 +281,7 @@ body {
     <nav class="hidden md:flex items-center gap-8">
       <a href="#hero" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382] transition-colors duration-300">// 概览</a>
       <a href="#sentiment" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382] transition-colors duration-300">// 情绪</a>
-      <a href="#commodities" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382] transition-colors duration-300">// 大宗</a>
-      <a href="#metals" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382] transition-colors duration-300">// 贵金属</a>
+      <a href="#commodities" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382] transition-colors duration-300">// 走势</a>
       <a href="#notes" class="font-mono text-xs tracking-widest text-gray-400 hover:text-[#e8c382] transition-colors duration-300">// 随笔</a>
       <a href="#research" class="font-mono text-xs tracking-widest text-[#e8c382] hover:text-white transition-colors duration-300">// 研报</a>
     </nav>
@@ -503,165 +502,51 @@ body {
 </section>
 
 <!-- ================================================================ -->
-<!-- SECTION 2: COMMODITIES — DATA CRYSTALS -->
+<!-- SECTION 2: PRICE CHARTS — TradingView 1-Week -->
 <!-- ================================================================ -->
-<section id="commodities" class="relative py-24 section-grid-4">
+<section id="commodities" class="relative py-24">
   <div class="max-w-7xl mx-auto px-6">
-    <!-- Section header -->
-    <div class="mb-16 frame-section-entry">
-      <div class="font-mono text-[0.65rem] tracking-[0.2em] text-[#e8c382] mb-4">// SECTION_02</div>
-      <h2 class="font-gloock text-5xl md:text-7xl leading-[0.95] text-white" id="commodities-heading">
-        <div class="reveal-word"><span>大宗商品</span></div><br>
-        <div class="reveal-word"><span class="text-gradient-gold">COMMODITIES</span></div>
+    <div class="mb-10 frame-section-entry">
+      <div class="font-mono text-[0.65rem] tracking-[0.2em] text-[#e8c382] mb-4">// SECTION_02 · TRADINGVIEW</div>
+      <h2 class="font-gloock text-5xl md:text-7xl leading-[0.95] text-white">
+        <div class="reveal-word"><span>价格走势</span></div><br>
+        <div class="reveal-word"><span class="text-gradient-gold">CHARTS</span></div>
       </h2>
-      <p class="font-manrope text-sm text-gray-500 mt-4 max-w-xl">全球关键能源价格追踪 — 布伦特原油现货实时数据与波动率监控</p>
+      <p class="font-manrope text-sm text-gray-500 mt-3 max-w-lg">TradingView 实时图表 — 过去一周价格走势，无需手动刷新</p>
     </div>
 
-    <!-- Featured Commodity Card -->
-    <div class="max-w-2xl">
-      <div class="data-card frame-section rounded-sm p-6 relative overflow-hidden scanline-subtle">
-        <div class="card-glow"></div>
-        <div class="flex gap-6">
-          <div class="w-40 h-40 flex-shrink-0" id="crystal-oil">
-            <canvas id="crystalCanvas1" width="160" height="160"></canvas>
-          </div>
-          <div class="flex-1">
-            <div class="font-mono text-[0.6rem] tracking-[0.15em] text-gray-500 mb-1">ENERGY · 能源</div>
-            <div class="font-gloock text-3xl text-white mb-1">布伦特原油</div>
-            <div class="font-bebas text-5xl tracking-tight text-white" id="price-oil">--</div>
-            <div class="font-mono text-sm mt-1" id="change-oil">--</div>
-            <div class="mt-3 flex gap-4 text-[0.6rem] font-mono tracking-wider text-gray-500">
-              <span>高: <span class="text-white" id="high-oil">--</span></span>
-              <span>低: <span class="text-white" id="low-oil">--</span></span>
-              <span>量: <span class="text-white" id="vol-oil">--</span></span>
-            </div>
-          </div>
+    <!-- 2x2 Chart Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <!-- Gold 1W -->
+      <div class="frame-section rounded-sm overflow-hidden p-3" style="height:380px">
+        <div class="font-mono text-[0.55rem] tracking-[0.15em] text-gray-500 mb-2 px-1">🥇 XAU/USD · 黄金现货</div>
+        <div class="tradingview-widget-container" style="height:340px">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-chart.js" async>{"symbol":"OANDA:XAUUSD","width":"100%","height":"100%","locale":"zh_CN","dateRange":"1W","colorTheme":"dark","isTransparent":true,"autosize":true}</script>
         </div>
       </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- ================================================================ -->
-<!-- SECTION 3: PRECIOUS METALS — LIVE TICKERS -->
-<!-- ================================================================ -->
-<section id="metals" class="relative py-24 section-grid-2">
-  <div class="max-w-7xl mx-auto px-6">
-    <div class="grid grid-cols-1 lg:grid-cols-[0.8fr_1.2fr] gap-12">
-
-      <!-- LEFT: Section Header + KPI -->
-      <div class="frame-section-entry">
-        <div class="font-mono text-[0.65rem] tracking-[0.2em] text-[#e8c382] mb-4">// SECTION_03</div>
-        <h2 class="font-gloock text-5xl md:text-7xl leading-[0.95] text-white" id="metals-heading">
-          <div class="reveal-word"><span>贵金属</span></div><br>
-          <div class="reveal-word"><span class="text-gradient-gold">PRECIOUS</span></div><br>
-          <div class="reveal-word"><span>METALS</span></div>
-        </h2>
-        <p class="font-manrope text-sm text-gray-500 mt-6 max-w-sm leading-relaxed">
-          黄金、白银、铂金、钯金 — 实时报价与价差分析。算法驱动的波动率监测与趋势信号。
-        </p>
-
-        <!-- Aggregate KPI -->
-        <div class="frame-section p-5 rounded-sm mt-8">
-          <div class="font-mono text-[0.6rem] tracking-[0.15em] text-gray-500 mb-2">贵金属综合指标</div>
-          <div class="font-bebas text-6xl tracking-tight text-gradient-gold" id="metal-composite">--</div>
-          <div class="font-mono text-xs text-gray-500 mt-2">GOLD · SILVER · PLATINUM · PALLADIUM</div>
+      <!-- Silver 1W -->
+      <div class="frame-section rounded-sm overflow-hidden p-3" style="height:380px">
+        <div class="font-mono text-[0.55rem] tracking-[0.15em] text-gray-500 mb-2 px-1">🥈 XAG/USD · 白银现货</div>
+        <div class="tradingview-widget-container" style="height:340px">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-chart.js" async>{"symbol":"OANDA:XAGUSD","width":"100%","height":"100%","locale":"zh_CN","dateRange":"1W","colorTheme":"dark","isTransparent":true,"autosize":true}</script>
         </div>
       </div>
-
-      <!-- RIGHT: Metal Tickers + Sparklines -->
-      <div class="space-y-4">
-        <!-- Gold -->
-        <div class="frame-section rounded-sm p-5 scanline-subtle frame-section-entry">
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-3">
-              <div class="w-3 h-3 rounded-full bg-[#e8c382] shadow-[0_0_8px_rgba(232,195,130,0.5)]"></div>
-              <div>
-                <div class="font-gloock text-xl text-white">XAU/USD</div>
-                <div class="font-mono text-[0.6rem] tracking-wider text-gray-500">黄金 / 现货</div>
-              </div>
-            </div>
-            <div class="text-right">
-              <div class="font-bebas text-3xl tracking-tight text-white" id="metal-price-gold">--</div>
-              <div class="font-mono text-xs" id="metal-change-gold">--</div>
-            </div>
-          </div>
-          <svg class="w-full h-16" id="sparkline-gold" viewBox="0 0 400 64" preserveAspectRatio="none"></svg>
-          <div class="flex justify-between mt-2 text-[0.55rem] font-mono tracking-wider text-gray-600">
-            <span>BID <span class="text-white" id="bid-gold">--</span></span>
-            <span>ASK <span class="text-white" id="ask-gold">--</span></span>
-            <span>SPREAD <span class="text-white" id="spread-gold">--</span></span>
-          </div>
+      <!-- Oil 1W -->
+      <div class="frame-section rounded-sm overflow-hidden p-3" style="height:380px">
+        <div class="font-mono text-[0.55rem] tracking-[0.15em] text-gray-500 mb-2 px-1">🛢️ UKOIL · 布伦特原油</div>
+        <div class="tradingview-widget-container" style="height:340px">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-chart.js" async>{"symbol":"OANDA:UKOIL","width":"100%","height":"100%","locale":"zh_CN","dateRange":"1W","colorTheme":"dark","isTransparent":true,"autosize":true}</script>
         </div>
-
-        <!-- Silver -->
-        <div class="frame-section rounded-sm p-5 scanline-subtle frame-section-entry">
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-3">
-              <div class="w-3 h-3 rounded-full bg-gray-300 shadow-[0_0_8px_rgba(200,200,200,0.5)]"></div>
-              <div>
-                <div class="font-gloock text-xl text-white">XAG/USD</div>
-                <div class="font-mono text-[0.6rem] tracking-wider text-gray-500">白银 / 现货</div>
-              </div>
-            </div>
-            <div class="text-right">
-              <div class="font-bebas text-3xl tracking-tight text-white" id="metal-price-silver">--</div>
-              <div class="font-mono text-xs" id="metal-change-silver">--</div>
-            </div>
-          </div>
-          <svg class="w-full h-16" id="sparkline-silver" viewBox="0 0 400 64" preserveAspectRatio="none"></svg>
-          <div class="flex justify-between mt-2 text-[0.55rem] font-mono tracking-wider text-gray-600">
-            <span>BID <span class="text-white" id="bid-silver">--</span></span>
-            <span>ASK <span class="text-white" id="ask-silver">--</span></span>
-            <span>SPREAD <span class="text-white" id="spread-silver">--</span></span>
-          </div>
-        </div>
-
-        <!-- Platinum -->
-        <div class="frame-section rounded-sm p-5 scanline-subtle frame-section-entry">
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-3">
-              <div class="w-3 h-3 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.5)]"></div>
-              <div>
-                <div class="font-gloock text-xl text-white">XPT/USD</div>
-                <div class="font-mono text-[0.6rem] tracking-wider text-gray-500">铂金 / 现货</div>
-              </div>
-            </div>
-            <div class="text-right">
-              <div class="font-bebas text-3xl tracking-tight text-white" id="metal-price-platinum">--</div>
-              <div class="font-mono text-xs" id="metal-change-platinum">--</div>
-            </div>
-          </div>
-          <svg class="w-full h-16" id="sparkline-platinum" viewBox="0 0 400 64" preserveAspectRatio="none"></svg>
-          <div class="flex justify-between mt-2 text-[0.55rem] font-mono tracking-wider text-gray-600">
-            <span>BID <span class="text-white" id="bid-platinum">--</span></span>
-            <span>ASK <span class="text-white" id="ask-platinum">--</span></span>
-            <span>SPREAD <span class="text-white" id="spread-platinum">--</span></span>
-          </div>
-        </div>
-
-        <!-- Palladium -->
-        <div class="frame-section rounded-sm p-5 scanline-subtle frame-section-entry">
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-3">
-              <div class="w-3 h-3 rounded-full bg-purple-400 shadow-[0_0_8px_rgba(168,85,247,0.5)]"></div>
-              <div>
-                <div class="font-gloock text-xl text-white">XPD/USD</div>
-                <div class="font-mono text-[0.6rem] tracking-wider text-gray-500">钯金 / 现货</div>
-              </div>
-            </div>
-            <div class="text-right">
-              <div class="font-bebas text-3xl tracking-tight text-white" id="metal-price-palladium">--</div>
-              <div class="font-mono text-xs" id="metal-change-palladium">--</div>
-            </div>
-          </div>
-          <svg class="w-full h-16" id="sparkline-palladium" viewBox="0 0 400 64" preserveAspectRatio="none"></svg>
-          <div class="flex justify-between mt-2 text-[0.55rem] font-mono tracking-wider text-gray-600">
-            <span>BID <span class="text-white" id="bid-palladium">--</span></span>
-            <span>ASK <span class="text-white" id="ask-palladium">--</span></span>
-            <span>SPREAD <span class="text-white" id="spread-palladium">--</span></span>
-          </div>
+      </div>
+      <!-- DXY 1W -->
+      <div class="frame-section rounded-sm overflow-hidden p-3" style="height:380px">
+        <div class="font-mono text-[0.55rem] tracking-[0.15em] text-gray-500 mb-2 px-1">💵 DXY · 美元指数</div>
+        <div class="tradingview-widget-container" style="height:340px">
+          <div class="tradingview-widget-container__widget"></div>
+          <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-chart.js" async>{"symbol":"TVC:DXY","width":"100%","height":"100%","locale":"zh_CN","dateRange":"1W","colorTheme":"dark","isTransparent":true,"autosize":true}</script>
         </div>
       </div>
     </div>
@@ -1613,58 +1498,7 @@ function updateUI() {
   });
 
   // Commodities
-  // Commodities (Brent)
-  (() => {
-    const key = 'BRENT', k = 'oil';
-    const p = engine.getPrice(key);
-    const ch = engine.getChange(key);
-    const chp = engine.getChangePercent(key);
-    const hl = engine.getHighLow(key);
-    const priceEl = document.getElementById(`price-${k}`);
-    const changeEl = document.getElementById(`change-${k}`);
-    if (priceEl) priceEl.textContent = fmtPrice(key, p);
-    if (changeEl) changeEl.innerHTML = fmtChange(ch, chp, key);
-    const highEl = document.getElementById(`high-${k}`);
-    const lowEl = document.getElementById(`low-${k}`);
-    const volEl = document.getElementById(`vol-${k}`);
-    if (highEl) highEl.textContent = fmtPrice(key, hl.high);
-    if (lowEl) lowEl.textContent = fmtPrice(key, hl.low);
-    if (volEl) volEl.textContent = Math.floor(engine.getVolume(key)).toLocaleString('zh-CN');
-  })();
-
-  // Precious metals
-  ['GOLD','SILVER','PLAT','PALL'].forEach(k => {
-    const nameMap = { GOLD: 'gold', SILVER: 'silver', PLAT: 'platinum', PALL: 'palladium' };
-    const name = nameMap[k];
-    const p = engine.getPrice(k);
-    const ch = engine.getChange(k);
-    const chp = engine.getChangePercent(k);
-    const priceEl = document.getElementById(`metal-price-${name}`);
-    const changeEl = document.getElementById(`metal-change-${name}`);
-    if (priceEl) priceEl.textContent = fmtPrice(k, p);
-    if (changeEl) changeEl.innerHTML = fmtChange(ch, chp, k);
-    const spread = engine.getSpread(k);
-    const bidEl = document.getElementById(`bid-${name}`);
-    const askEl = document.getElementById(`ask-${name}`);
-    const spreadEl = document.getElementById(`spread-${name}`);
-    if (bidEl) bidEl.textContent = fmtPrice(k, p - spread/2);
-    if (askEl) askEl.textContent = fmtPrice(k, p + spread/2);
-    if (spreadEl) spreadEl.textContent = spread.toFixed(2);
-
-    // Update sparkline
-    drawSparkline(`sparkline-${name}`, engine.getHistory(k, 60), k);
-  });
-
-  // Metal composite
-  const goldP = engine.getPrice('GOLD');
-  const silverP = engine.getPrice('SILVER');
-  const platP = engine.getPrice('PLAT');
-  const pallP = engine.getPrice('PALL');
-  const composite = (goldP * 0.4 + silverP * 0.15 + platP * 0.2 + pallP * 0.25);
-  const compEl = document.getElementById('metal-composite');
-  if (compEl) compEl.textContent = composite.toFixed(2);
-
-  // Indices now served by TradingView widgets — no local update needed
+  // Commodities & metals now served by TradingView charts — no local update needed
 
   // Header time
   const now = new Date();
